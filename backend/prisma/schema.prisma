@@ -18,76 +18,11 @@ model User {
   email         String    @unique
   name          String?
   passwordHash  String?
-  avatarUrl     String?
   role          UserRole  @default(USER)
   isActive      Boolean   @default(true)
-  
-  googleId      String?   @unique
-  
-  questions     Question[]
-  responses     Response[]
-  
-  lastLogin     DateTime?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   @@index([email])
-}
-
-model Question {
-  id            String    @id @default(cuid())
-  title         String
-  text          String
-  shareableLink String    @unique
-  viewCount     Int       @default(0)
-  status        QuestionStatus @default(ACTIVE)
-  
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String
-  responses     Response[]
-  
-  reportCount   Int       @default(0)
-  isFeatured    Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([createdAt])
-}
-
-model Response {
-  id            String    @id @default(cuid())
-  type          ResponseType
-  content       String?
-  mediaUrl      String?
-  googleDriveFileId String?
-  duration      Int?
-  status        ResponseStatus @default(PENDING)
-  
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String
-  question      Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  questionId    String
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-enum ResponseType {
-  TEXT
-  VIDEO
-  AUDIO
-}
-
-enum QuestionStatus {
-  ACTIVE
-  CLOSED
-  FLAGGED
-  ARCHIVED
-}
-
-enum ResponseStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  FLAGGED
 }

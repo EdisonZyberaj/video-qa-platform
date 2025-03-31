@@ -1,10 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
 import Logo from "../assets/logo1.png";
 import { FcGoogle } from "react-icons/fc";
 import FirstLogo from "../assets/firstLogo.png";
 import { Link } from "react-router-dom";
 
 function Login() {
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
+
+	const handleLogin = async e => {
+		e.preventDefault();
+		try {
+			const response = await fetch("http://localhost:5000/api/auth/login", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({ email, password })
+			});
+
+			const data = await response.json();
+
+			if (response.ok) {
+				// Handle successful login (e.g., save token, redirect user)
+				console.log("Login successful:", data);
+			} else {
+				// Handle error response
+				setError(data.message || "Login failed");
+			}
+		} catch (err) {
+			setError("An error occurred. Please try again.");
+		}
+	};
+
 	return (
 		<div className="flex items-center justify-center min-h-screen bg-lightBlue px-4">
 			<div className="flex bg-white rounded-lg shadow-lg overflow-hidden w-full max-w-4xl">
@@ -20,7 +49,7 @@ function Login() {
 						</h1>
 					</div>
 
-					<div className="space-y-4">
+					<form onSubmit={handleLogin} className="space-y-4">
 						<div>
 							<label htmlFor="email" className="block text-gray-700">
 								Email
@@ -28,6 +57,8 @@ function Login() {
 							<input
 								id="email"
 								type="email"
+								value={email}
+								onChange={e => setEmail(e.target.value)}
 								className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue"
 							/>
 						</div>
@@ -39,28 +70,37 @@ function Login() {
 							<input
 								id="password"
 								type="password"
+								value={password}
+								onChange={e => setPassword(e.target.value)}
 								className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue"
 							/>
 						</div>
 
-						<button className="w-full bg-mediumBlue text-white py-2 rounded-lg hover:bg-hoverBlue">
+						{error &&
+							<p className="text-red-500 text-sm">
+								{error}
+							</p>}
+
+						<button
+							type="submit"
+							className="w-full bg-mediumBlue text-white py-2 rounded-lg hover:bg-hoverBlue">
 							Login
 						</button>
+					</form>
 
-						<p className="text-center text-gray-500">or</p>
+					<p className="text-center text-gray-500 mt-4">or</p>
 
-						<button className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-lg hover:bg-gray-100">
-							<FcGoogle className="mr-2 text-lg" />
-							Login with Google
-						</button>
+					<button className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-lg hover:bg-gray-100">
+						<FcGoogle className="mr-2 text-lg" />
+						Login with Google
+					</button>
 
-						<p className="text-center text-gray-600 mt-4">
-							Don't have an account?{" "}
-							<Link to="/register" className="text-mediumBlue font-semibold">
-								Sign up
-							</Link>
-						</p>
-					</div>
+					<p className="text-center text-gray-600 mt-4">
+						Don't have an account?{" "}
+						<Link to="/register" className="text-mediumBlue font-semibold">
+							Sign up
+						</Link>
+					</p>
 				</div>
 				<div className="w-1/2 bg-lightBlue flex flex-col items-center justify-center p-6">
 					<img src={Logo} alt="Logo" className="w-32 mb-4 rounded" />

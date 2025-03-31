@@ -16,12 +16,14 @@ function Navbar() {
 					<Link to="/questions">Questions</Link>
 					<Link to="/record">Record</Link>
 					<Link to="/upload">Upload</Link>
+					{/* nqs useri esht i loguar jo guest */}
+					<Link to="/myQuestions">My Question</Link>
 				</div>
 				<div className="hidden md:flex items-center space-x-4 ml-6">
-					<Link to="/" className="hover:text-gray-400">
+					<Link to="/notifications" className="hover:text-gray-400">
 						<Bell size={20} />
 					</Link>
-					<Link to="/" className="hover:text-gray-400">
+					<Link to="/login" className="hover:text-gray-400">
 						<User size={20} />
 					</Link>
 					<Link
