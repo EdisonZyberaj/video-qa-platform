@@ -3,31 +3,55 @@ import Logo from "../assets/logo1.png";
 import { FcGoogle } from "react-icons/fc";
 import FirstLogo from "../assets/firstLogo.png";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
+	const navigate = useNavigate();
 
 	const handleLogin = async e => {
 		e.preventDefault();
+		setError("");
+
+		const trimmedEmail = email.trim();
+		const trimmedPassword = password.trim();
+
+		if (!trimmedEmail || !trimmedPassword) {
+			setError("All fields are required.");
+			return;
+		}
+
+		if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
+			setError("Invalid email format.");
+			return;
+		}
+
+		if (trimmedPassword.length < 6) {
+			setError("Password must be at least 6 characters.");
+			return;
+		}
+
 		try {
 			const response = await fetch("http://localhost:5000/api/auth/login", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json"
 				},
-				body: JSON.stringify({ email, password })
+				body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword })
 			});
 
 			const data = await response.json();
 
 			if (response.ok) {
-				// Handle successful login (e.g., save token, redirect user)
-				console.log("Login successful:", data);
+				navigate("/");
+			} else if (response.status === 404) {
+				setError("User does not exist. Please check your email.");
+			} else if (response.status === 401) {
+				setError("Incorrect password. Please try again.");
 			} else {
-				// Handle error response
-				setError(data.message || "Login failed");
+				setError(data.message || "Login failed.");
 			}
 		} catch (err) {
 			setError("An error occurred. Please try again.");
@@ -62,7 +86,6 @@ function Login() {
 								className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue"
 							/>
 						</div>
-
 						<div>
 							<label htmlFor="password" className="block text-gray-700">
 								Password
@@ -75,12 +98,11 @@ function Login() {
 								className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue"
 							/>
 						</div>
-
+						// conditional rendering in react
 						{error &&
 							<p className="text-red-500 text-sm">
 								{error}
 							</p>}
-
 						<button
 							type="submit"
 							className="w-full bg-mediumBlue text-white py-2 rounded-lg hover:bg-hoverBlue">
