@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Components/Login.jsx";
 import Register from "./Components/Register.jsx";
 import Questions from "./Components/Questions.jsx";
+import VideoRecorder from "./Components/VideoRecorder";
 
 function App() {
 	return (
@@ -17,6 +18,7 @@ function App() {
 				<Route path="/questions" element={<Questions />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/register" element={<Register />} />
+				<Route path="/record" element={<VideoRecorder />} />
 			</Routes>
 		</BrowserRouter>
 	);

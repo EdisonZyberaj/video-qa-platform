@@ -3,6 +3,8 @@ import Logo from "../assets/logo1.png";
 import { FcGoogle } from "react-icons/fc";
 import FirstLogo from "../assets/firstLogo.png";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 function Register() {
 	const [name, setName] = useState("");
@@ -45,29 +47,25 @@ function Register() {
 		}
 
 		try {
-			const response = await fetch("http://localhost:5000/api/auth/register", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify({
-					name: trimmedName,
-					email: trimmedEmail,
-					password: trimmedPassword
-				})
+			const response = await axios.post("http://localhost:5000/api/auth/register", {
+				name: trimmedName,
+				email: trimmedEmail,
+				password: trimmedPassword,
 			});
 
-			const data = await response.json();
-
-			if (response.ok) {
-				navigate("/login");
-			} else if (response.status === 400) {
-				setError("User already exists.");
-			} else {
-				setError(data.message || "Registration failed.");
+			if (response.status === 201) {
+				
+				toast.success(response.data.message, {
+					position: "top-center",
+					autoClose: 3000, 
+				});
+				
+				setTimeout(() => {
+					navigate("/");
+				}, 3000);
 			}
 		} catch (err) {
-			setError("An error occurred. Please try again.");
+			setError(err.response?.data?.message || "An error occurred. Please try again.");
 		}
 	};
 

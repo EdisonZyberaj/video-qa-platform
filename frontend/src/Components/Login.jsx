@@ -34,16 +34,15 @@ function Login() {
 		}
 
 		try {
-			const response = await fetch("http://localhost:5000/api/auth/login", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword })
-			});
+			const response = await axios.post(
+				"http://localhost:5000/api/auth/login",
+				{
+					email: trimmedEmail,
+					password: trimmedPassword
+				}
+			);
 
-			const data = await response.json();
-
+			const data = response.data;
 			if (response.ok) {
 				navigate("/");
 			} else if (response.status === 404) {
@@ -98,7 +97,6 @@ function Login() {
 								className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue"
 							/>
 						</div>
-						// conditional rendering in react
 						{error &&
 							<p className="text-red-500 text-sm">
 								{error}

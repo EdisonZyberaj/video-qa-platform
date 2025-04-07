@@ -10,12 +10,10 @@ const prisma = new PrismaClient();
 export const register = async (req, res) => {
 	try {
 		const { email, name, password } = req.body;
-		// para se te bejme register kontrollojme ne databaze nqs kemi user te regjistruar
 		const existingUser = await prisma.user.findUnique({ where: { email } });
 		if (existingUser) {
 			return res.status(400).json({ message: "User already exists" });
 		}
-		// meqenese u siguruam qe useri nuk eshte regjistruar me pare
 		const hashedPassword = await bcrypt.hash(password, 10);
 
 		await prisma.user.create({

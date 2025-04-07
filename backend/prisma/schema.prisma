@@ -26,3 +26,31 @@ model User {
 
   @@index([email])
 }
+model Questonare{
+  id 
+  title
+  description
+  Questions Question[]
+  ownerId  ///id e userq qe e ka krijuar
+}
+model Question{
+  id
+
+  questionsareId 
+}
+
+model Answuers{
+  id
+  userId  //id e suerit qe u pergjigj
+  questionId //
+  answer
+  //questionareID
+  
+}
+
+model QuestionareAnswers{
+  id
+  userId// kush u pergjigj
+  questionareID // ref e qeustionare
+  video link
+}
