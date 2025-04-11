@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Linkedin, Twitter, Instagram } from "lucide-react";
 import logo from "../assets/logo.png";
 
 function Footer() {
@@ -9,7 +10,7 @@ function Footer() {
 				<div>
 					<div className="flex items-center mb-4">
 						<img src={logo} alt="VideoQuery Logo" className="h-10 mr-3" />
-						<h3 className="text-xl font-bold">Q&A platform</h3>
+						<h3 className="text-xl font-bold">Q&A Platform</h3>
 					</div>
 					<p className="text-sm text-gray-300">
 						Connect with experts through personalized video Q&A experiences.
@@ -54,25 +55,35 @@ function Footer() {
 					<h4 className="font-semibold mb-4">Contact Us</h4>
 					<ul className="space-y-2">
 						<li>support@qaplatform.com</li>
-						<div className="flex space-x-4 mt-4">
-							<Link to="/linkedin" className="text-white hover:text-mediumBlue">
-								LinkedIn
-							</Link>
-							<Link to="/twitter" className="text-white hover:text-mediumBlue">
-								Twitter
-							</Link>
-							<Link
-								to="/instagram"
-								className="text-white hover:text-mediumBlue">
-								Instagram
-							</Link>
-						</div>
 					</ul>
+					<div className="flex space-x-4 mt-4">
+						<a
+							href="https://www.linkedin.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-white hover:text-mediumBlue">
+							<Linkedin className="w-6 h-6" />
+						</a>
+						<a
+							href="https://www.twitter.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-white hover:text-mediumBlue">
+							<Twitter className="w-6 h-6" />
+						</a>
+						<a
+							href="https://www.instagram.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-white hover:text-mediumBlue">
+							<Instagram className="w-6 h-6" />
+						</a>
+					</div>
 				</div>
 			</div>
 			<div className="border-t border-gray-700 mt-8 pt-6 text-center">
 				<p className="text-sm text-gray-400">
-					© {new Date().getFullYear()} VideoQuery. All Rights Reserved.
+					© {new Date().getFullYear()} Q&A Platfrom. All Rights Reserved.
 				</p>
 			</div>
 		</footer>

@@ -13,17 +13,19 @@ function Navbar() {
 					<img className="h-14 w-14" src={logo} alt="Logo" />
 				</Link>
 				<div className="hidden md:flex space-x-6">
-					<Link to="/questions">Questions</Link>
+					<Link to="/surveys">My Surveys</Link>
+					<Link to="/responder-surveys">Responder Surveys</Link>
 					<Link to="/record">Record</Link>
 					<Link to="/upload">Upload</Link>
 					{/* nqs useri esht i loguar jo guest */}
-					<Link to="/myQuestions">My Question</Link>
+					<Link to="/">Home</Link>
 				</div>
 				<div className="hidden md:flex items-center space-x-4 ml-6">
 					<Link to="/notifications" className="hover:text-gray-400">
 						<Bell size={20} />
 					</Link>
-					<Link to="/login" className="hover:text-gray-400">
+					<Link to="/userProfile" className="hover:text-gray-400">
+						{/* /login nqs useri s esht login e bejme redirect tek login */}
 						<User size={20} />
 					</Link>
 					<Link
@@ -43,13 +45,13 @@ function Navbar() {
 					<Link to="/record" className="hover:text-gray-400">
 						Record
 					</Link>
-					<Link to="/upload" className="hover:text-gray-400">
-						Upload
+					<Link to="/surveys" className="hover:text-gray-400">
+						My Surveys
 					</Link>
 					<Link to="/" className="hover:text-gray-400">
-						Notifications
+						Home
 					</Link>
-					<Link to="/" className="hover:text-gray-400">
+					<Link to="/userProfile" className="hover:text-gray-400">
 						Profile
 					</Link>
 					<Link

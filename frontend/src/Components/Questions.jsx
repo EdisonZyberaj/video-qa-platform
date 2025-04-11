@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Question from "./Question.jsx";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
-
+///////false
 function Questions() {
 	const questions = [
 		{

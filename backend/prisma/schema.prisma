@@ -6,51 +6,115 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
-
-enum UserRole {
-  GUEST
-  USER
+enum Role {
+  ASKER
+  RESPONDER
   ADMIN
 }
-
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  passwordHash  String?
-  role          UserRole  @default(USER)
-  isActive      Boolean   @default(true)
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([email])
+  user_id    Int           @id
+  name       String
+  last_name  String
+  email      String
+  password   String
+  role       Role
+  created_at DateTime
+  surveys       Survey[]      @relation("UserSurveys")
+  questions     Question[]    @relation("UserQuestions")
+  answers       Answer[]
+  surveyVideos  Survey_Video[]
 }
-model Questonare{
-  id 
-  title
-  description
-  Questions Question[]
-  ownerId  ///id e userq qe e ka krijuar
+model Survey {
+  survey_id   Int       @id
+  title       String
+  description String
+  created_at  DateTime
+  authorId    Int
+  author      User      @relation("UserSurveys", fields: [authorId], references: [user_id])
+  questions   Question[]
+  surveyVideos Survey_Video[]
 }
-model Question{
-  id
-
-  questionsareId 
+model Question {
+  question_id Int       @id
+  title       String
+  category    Category
+  surveyId    Int
+  authorId    Int
+  survey      Survey  @relation(fields: [surveyId], references: [survey_id])
+  author      User    @relation("UserQuestions", fields: [authorId], references: [user_id])
+  answers     Answer[]
 }
-
-model Answuers{
-  id
-  userId  //id e suerit qe u pergjigj
-  questionId //
-  answer
-  //questionareID
-  
+model Answer {
+  answer_Id   Int      @id
+  text        String
+  created_at  DateTime
+  authorId    Int
+  surveyId    Int
+  questionId  Int
+  author      User     @relation(fields: [authorId], references: [user_id])
+  question    Question @relation(fields: [questionId], references: [question_id])
 }
-
-model QuestionareAnswers{
-  id
-  userId// kush u pergjigj
-  questionareID // ref e qeustionare
-  video link
+model Survey_Video {
+  servey_video_id Int    @id
+  question_link   String
+  surveyId        Int
+  uploaderId      Int
+  survey   Survey @relation(fields: [surveyId], references: [survey_id])
+  uploader User   @relation(fields: [uploaderId], references: [user_id])
+}
+enum Category {
+  TECHNOLOGY
+  PROGRAMMING
+  WEB_DEVELOPMENT
+  MOBILE_DEVELOPMENT
+  DATA_SCIENCE
+  ARTIFICIAL_INTELLIGENCE
+  MACHINE_LEARNING
+  CYBERSECURITY
+  CLOUD_COMPUTING
+  DEVOPS
+  DATABASES
+  BLOCKCHAIN
+  HEALTH_AND_MEDICINE
+  MENTAL_HEALTH
+  PHYSICAL_FITNESS
+  NUTRITION
+  BUSINESS
+  ENTREPRENEURSHIP
+  MARKETING
+  FINANCE
+  INVESTING
+  CAREER_ADVICE
+  EDUCATION
+  LANGUAGES
+  MATHEMATICS
+  SCIENCE
+  PHYSICS
+  CHEMISTRY
+  BIOLOGY
+  ASTRONOMY
+  ENVIRONMENTAL_SCIENCE
+  HISTORY
+  POLITICS
+  LAW
+  PHILOSOPHY
+  PSYCHOLOGY
+  SOCIOLOGY
+  ARTS_AND_CULTURE
+  MUSIC
+  LITERATURE
+  FILM_AND_TELEVISION
+  GAMING
+  TRAVEL
+  COOKING
+  FASHION
+  RELATIONSHIPS
+  PARENTING
+  HOME_IMPROVEMENT
+  GARDENING
+  PETS
+  AUTOMOTIVE
+  SPORTS
+  DIY_AND_CRAFTS
+  PHOTOGRAPHY
 }
