@@ -4,6 +4,7 @@ import { FcGoogle } from "react-icons/fc";
 import FirstLogo from "../assets/firstLogo.png";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
 	const [email, setEmail] = useState("");
@@ -32,6 +33,7 @@ function Login() {
 			setError("Password must be at least 6 characters.");
 			return;
 		}
+		console.log(trimmedEmail, trimmedPassword);
 
 		try {
 			const response = await axios.post(
@@ -42,18 +44,27 @@ function Login() {
 				}
 			);
 
-			const data = response.data;
-			if (response.ok) {
+			console.log("After res");
+			const { token } = response.data;
+
+			if (token) {
+				sessionStorage.setItem("token", token);
+
+				console.log("Token stored in sessionStorage:", token);
+
 				navigate("/");
-			} else if (response.status === 404) {
-				setError("User does not exist. Please check your email.");
-			} else if (response.status === 401) {
-				setError("Incorrect password. Please try again.");
 			} else {
-				setError(data.message || "Login failed.");
+				setError("Login failed. No token received.");
 			}
 		} catch (err) {
-			setError("An error occurred. Please try again.");
+			console.log(err);
+			if (err.response && err.response.status === 404) {
+				setError("User does not exist. Please check your email.");
+			} else if (err.response && err.response.status === 401) {
+				setError("Incorrect password. Please try again.");
+			} else {
+				setError("An error occurred. Please try again.");
+			}
 		}
 	};
 

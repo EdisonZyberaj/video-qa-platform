@@ -8,11 +8,12 @@ import { toast } from "react-toastify";
 
 function Register() {
 	const [name, setName] = useState("");
+	const [lastName, setLastName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [role, setRole] = useState("ASKER");
 	const [error, setError] = useState("");
 	const navigate = useNavigate();
-
 	const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 	const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\b(email|example|yourusername)\b).{6,}$/;
 
@@ -21,10 +22,11 @@ function Register() {
 		setError("");
 
 		const trimmedName = name.trim();
+		const trimmedLastName = lastName.trim();
 		const trimmedEmail = email.trim();
 		const trimmedPassword = password.trim();
 
-		if (!trimmedName || !trimmedEmail || !trimmedPassword) {
+		if (!trimmedName || !trimmedLastName || !trimmedEmail || !trimmedPassword) {
 			setError("All fields are required.");
 			return;
 		}
@@ -46,26 +48,30 @@ function Register() {
 			return;
 		}
 
+		console.log(trimmedEmail, trimmedLastName, trimmedName, trimmedPassword);
 		try {
-			const response = await axios.post("http://localhost:5000/api/auth/register", {
-				name: trimmedName,
-				email: trimmedEmail,
-				password: trimmedPassword,
-			});
-
+			const response = await axios.post(
+				"http://localhost:5000/api/auth/register",
+				{
+					name: trimmedName,
+					lastName: trimmedLastName,
+					email: trimmedEmail,
+					password: trimmedPassword,
+					role
+				}
+			);
 			if (response.status === 201) {
-				
 				toast.success(response.data.message, {
 					position: "top-center",
-					autoClose: 3000, 
+					autoClose: 3000
 				});
-				
+
 				setTimeout(() => {
-					navigate("/");
+					navigate("/login");
 				}, 3000);
 			}
 		} catch (err) {
-			setError(err.response?.data?.message || "An error occurred. Please try again.");
+			setError("An error occurred. Please try again.");
 		}
 	};
 
@@ -87,13 +93,26 @@ function Register() {
 					<form onSubmit={handleRegister} className="space-y-4">
 						<div>
 							<label htmlFor="name" className="block text-gray-700">
-								Full Name
+								First Name
 							</label>
 							<input
 								id="name"
 								type="text"
 								value={name}
 								onChange={e => setName(e.target.value)}
+								className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue"
+							/>
+						</div>
+
+						<div>
+							<label htmlFor="lastName" className="block text-gray-700">
+								Last Name
+							</label>
+							<input
+								id="lastName"
+								type="text"
+								value={lastName}
+								onChange={e => setLastName(e.target.value)}
 								className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue"
 							/>
 						</div>
@@ -122,6 +141,20 @@ function Register() {
 								onChange={e => setPassword(e.target.value)}
 								className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue"
 							/>
+						</div>
+
+						<div>
+							<label htmlFor="role" className="block text-gray-700">
+								Role
+							</label>
+							<select
+								id="role"
+								value={role}
+								onChange={e => setRole(e.target.value)}
+								className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue">
+								<option value="ASKER">Asker</option>
+								<option value="RESPONDER">Responder</option>
+							</select>
 						</div>
 
 						{error &&

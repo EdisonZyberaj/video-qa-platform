@@ -56,7 +56,7 @@ function Surveys({ currentUser }) {
 										{surveys.map(survey =>
 											<Link
 												key={survey.id}
-												to={`/survey/${survey.id}`}
+												to={`/surveys/${survey.id}`}
 												className="block bg-white rounded-lg shadow-lg hover:shadow-xl overflow-hidden border border-lightBlue">
 												<div className="bg-mediumBlue h-3" />
 												<div className="p-8">
@@ -82,10 +82,12 @@ function Surveys({ currentUser }) {
 									</div>}
 
 							<div className="flex justify-center mt-10">
-								<button className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-6 px-12 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center text-2xl">
+								<Link
+									to="/add-survey"
+									className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center">
 									<PlusCircle className="w-4 h-4 mr-4" />
 									ADD SURVEY
-								</button>
+								</Link>
 							</div>
 						</div>}
 			</main>

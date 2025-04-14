@@ -6,16 +6,18 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
 enum Role {
   ASKER
   RESPONDER
   ADMIN
 }
+
 model User {
-  user_id    Int           @id
+  user_id    Int           @id @default(autoincrement())
   name       String
   last_name  String
-  email      String
+  email      String        @unique
   password   String
   role       Role
   created_at DateTime
@@ -24,8 +26,9 @@ model User {
   answers       Answer[]
   surveyVideos  Survey_Video[]
 }
+
 model Survey {
-  survey_id   Int       @id
+  survey_id   Int       @id @default(autoincrement())
   title       String
   description String
   created_at  DateTime
@@ -34,8 +37,9 @@ model Survey {
   questions   Question[]
   surveyVideos Survey_Video[]
 }
+
 model Question {
-  question_id Int       @id
+  question_id Int       @id @default(autoincrement())
   title       String
   category    Category
   surveyId    Int
@@ -44,8 +48,9 @@ model Question {
   author      User    @relation("UserQuestions", fields: [authorId], references: [user_id])
   answers     Answer[]
 }
+
 model Answer {
-  answer_Id   Int      @id
+  answer_Id   Int      @id @default(autoincrement())
   text        String
   created_at  DateTime
   authorId    Int
@@ -54,14 +59,16 @@ model Answer {
   author      User     @relation(fields: [authorId], references: [user_id])
   question    Question @relation(fields: [questionId], references: [question_id])
 }
+
 model Survey_Video {
-  servey_video_id Int    @id
+  servey_video_id Int    @id @default(autoincrement())
   question_link   String
   surveyId        Int
   uploaderId      Int
   survey   Survey @relation(fields: [surveyId], references: [survey_id])
   uploader User   @relation(fields: [uploaderId], references: [user_id])
 }
+
 enum Category {
   TECHNOLOGY
   PROGRAMMING

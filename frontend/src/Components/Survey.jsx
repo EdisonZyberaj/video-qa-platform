@@ -4,61 +4,68 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 import QuestionCard from "./QuestionCard.jsx";
-import EyeImg from "../assets/eye.png";
 import { Eye } from "lucide-react";
+import axios from "axios";
 
 function Survey({ currentUser }) {
 	const { id } = useParams();
+	console.log(id);
 	const navigate = useNavigate();
 	const [surveyData, setSurveyData] = useState(null);
 	const [questions, setQuestions] = useState([]);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(
-		() => {
-			const fetchSurveyDetails = async () => {
-				try {
-					const mockSurveyData = {
-						id: parseInt(id),
-						title: `Survey ${id} Title`,
-						description:
-							"This survey collects feedback about your experience with our products and services. Your input will help us improve and better meet your needs."
-					};
+	useEffect(() => {
+		const fetchSurveyDetails = async () => {
+			try {
+				 // Retrieve the token from sessionStorage
+				const token = sessionStorage.getItem("token");
 
-					const mockQuestions = [
-						{
-							id: 1,
-							user: "John Smith",
-							question:
-								"What challenges have you faced implementing React in your projects?"
-						},
-						{
-							id: 2,
-							user: "John Smith",
-							question:
-								"How has remote work affected your productivity and work-life balance?"
-						},
-						{
-							id: 3,
-							user: "John Smith",
-							question:
-								"What resources would help you advance your career at our company?"
-						}
-					];
-
-					setSurveyData(mockSurveyData);
-					setQuestions(mockQuestions);
-					setLoading(false);
-				} catch (error) {
-					console.error("Error fetching survey details:", error);
-					setLoading(false);
+				if (!token) {
+					console.error("No token found. Redirecting to login.");
+					navigate("/login");
+					return;
 				}
-			};
 
-			fetchSurveyDetails();
-		},
-		[id]
-	);
+				// Make the authenticated request
+				const response = await axios.get(`http://localhost:5000/api/surveys/${id}`, {
+					headers: {
+						Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+					},
+				});
+
+				const survey = response.data;
+
+				setSurveyData({
+					id: survey.survey_id,
+					title: survey.title,
+					description: survey.description,
+				});
+
+				setQuestions(
+					Array.isArray(survey.questions)
+						? survey.questions.map((q) => ({
+								id: q.question_id,
+								user: "Unknown User",
+								question: q.title,
+							}))
+						: []
+				);
+
+				setLoading(false);
+			} catch (error) {
+				console.error("Error fetching survey details:", error);
+				setLoading(false);
+
+				// Redirect to login if unauthorized
+				if (error.response && error.response.status === 401) {
+					navigate("/login");
+				}
+			}
+		};
+
+		fetchSurveyDetails();
+	}, [id, navigate]);
 
 	const handleBack = () => {
 		navigate("/surveys");
@@ -98,22 +105,21 @@ function Survey({ currentUser }) {
 								</button>
 
 								<h1 className="text-3xl font-bold text-darkBlue mb-3">
-									{surveyData.title}
+									{surveyData?.title || "Loading..."}
 								</h1>
-								<div className="h-1 w-20 bg-mediumBlue mb-4" />
 								<p className="text-darkBlue/80 max-w-3xl">
-									{surveyData.description}
+									{surveyData?.description || "Loading..."}
 								</p>
-							</div>
 
-							<div className="grid gap-6 mb-10">
-								{questions.map(q =>
-									<QuestionCard
-										key={q.id}
-										user={q.user}
-										question={q.question}
-									/>
-								)}
+								<div className="grid gap-6 mb-10">
+									{questions.length > 0 ? (
+										questions.map((q) => (
+											<QuestionCard key={q.id} user={q.user} question={q.question} />
+										))
+									) : (
+										<p>No questions available.</p>
+									)}
+								</div>
 							</div>
 
 							<div className="flex justify-center mt-10">

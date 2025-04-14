@@ -13,10 +13,9 @@ const authMiddleware = (req, res, next) => {
 	}
 
 	try {
-		const decoded = jwt.verify(
-			token.replace("Bearer", ""),
-			process.env.JWT_SECRET
-		);
+		const actualToken = token.replace("Bearer ", "").trim();
+		const decoded = jwt.verify(actualToken, process.env.JWT_SECRET);
+
 		req.user = decoded;
 		next();
 	} catch (error) {

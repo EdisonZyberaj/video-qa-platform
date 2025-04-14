@@ -42,7 +42,9 @@ function Home() {
 			<h1 className="text-4xl py-5 text-darkBlue font-bold mb-10 text-center bg-white ">
 				It's easy to start
 			</h1>
-			<section className="flex flex-col sm:flex-row bg-white text-black px-6 mt-110 py-20 pl-20">
+			<section
+				id="how-it-works"
+				className="flex flex-col sm:flex-row bg-white text-black px-6 mt-110 py-20 pl-20">
 				<div className="w-full md:w-1/2 max-w-md px-6 text-center md:text-left">
 					<div className="text-mediumBlue font-semibold mb-4">STEP 1</div>
 					<div className="flex flex-col items-center">

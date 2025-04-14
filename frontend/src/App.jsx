@@ -18,6 +18,7 @@ import SurveyResponders from "./Components/SurveyResponders.jsx";
 import ResponderAnswers from "./Components/Answers.jsx";
 import AnswerQuestion from "./Components/AnswerQuestion.jsx";
 import ResponderSurvey from "./Components/ResponderSurvey.jsx";
+import AddSurvey from "./Components/AddSurvey";
 
 function App() {
 	return (
@@ -30,8 +31,9 @@ function App() {
 				<Route path="/record" element={<VideoRecorder />} />
 				<Route path="/userProfile" element={<UserProfile />} />
 				<Route path="/surveys" element={<Surveys />} />
+				<Route path="/add-survey" element={<AddSurvey />} />
 				<Route path="/responder-surveys" element={<ResponderSurveys />} />
-				<Route path="/survey/:id" element={<Survey />} />
+				<Route path="/surveys/:id" element={<Survey />} />
 				<Route path="/survey/:id/answers" element={<Answers />} />
 				<Route path="/survey/:id/responders" element={<SurveyResponders />} />
 				<Route path="/responder-survey/:id" element={<ResponderSurvey />} />
