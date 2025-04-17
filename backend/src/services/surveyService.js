@@ -3,18 +3,38 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const getSurveyById = async id => {
-	const survey = await prisma.survey.findUnique({
-		where: { survey_id: parseInt(id) },
-		include: {
-			questions: true
+	try {
+		const survey = await prisma.survey.findUnique({
+			where: { survey_id: parseInt(id) },
+			include: {
+				author: {
+					select: {
+						name: true,
+						last_name: true
+					}
+				},
+				questions: {
+					include: {
+						author: {
+							select: {
+								name: true,
+								last_name: true
+							}
+						}
+					}
+				}
+			}
+		});
+
+		if (!survey) {
+			throw new Error("Survey not found");
 		}
-	});
 
-	if (!survey) {
-		throw new Error("Survey not found");
+		return survey;
+	} catch (error) {
+		console.error("Error fetching survey:", error);
+		throw error;
 	}
-
-	return survey;
 };
 export const createSurveyWithQuestions = async ({
 	title,
@@ -104,5 +124,25 @@ export const getSurveyByIdWithDetails = async surveyId => {
 	} catch (error) {
 		console.error("Error in getSurveyByIdWithDetails:", error);
 		throw new Error("Failed to fetch survey details");
+	}
+};
+export const getSurveyQuestions = async surveyId => {
+	try {
+		const questions = await prisma.question.findMany({
+			where: { surveyId: parseInt(surveyId) },
+			include: {
+				author: {
+					select: {
+						name: true,
+						last_name: true
+					}
+				}
+			}
+		});
+
+		return questions;
+	} catch (error) {
+		console.error("Error fetching survey questions:", error);
+		throw new Error("Failed to fetch questions");
 	}
 };

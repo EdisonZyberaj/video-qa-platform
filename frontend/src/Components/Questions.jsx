@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Question from "./Question.jsx";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
-///////false
+///////  mock page e projektit ne fillim
 function Questions() {
 	const questions = [
 		{
@@ -76,6 +76,7 @@ function Questions() {
 						)}
 					</div>
 				</div>
+				// mund ta perdor per front enhacement
 				<div className="w-full lg:w-1/3 bg-gray-200 p-6 mt-6 lg:mt-0 rounded-lg shadow-lg">
 					<div className="mb-6">
 						<h2 className="text-xl font-bold mb-2 flex items-center text-gray-800">

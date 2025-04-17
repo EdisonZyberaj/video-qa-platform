@@ -2,10 +2,11 @@ import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import {
 	getSurveyById as fetchSurveyById,
-	createSurveyWithQuestions
+	createSurveyWithQuestions,
+	getAllSurveys,
+	getSurveysByUserId,
+	getSurveyQuestions as fetchQuestionsService
 } from "../services/surveyService.js";
-import { getAllSurveys } from "../services/surveyService.js";
-import { getSurveysByUserId } from "../services/surveyService.js";
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -72,5 +73,16 @@ export const getUserSurveys = async (req, res) => {
 	} catch (error) {
 		console.error("Error fetching user surveys:", error);
 		res.status(500).json({ message: "Failed to fetch surveys" });
+	}
+};
+export const getSurveyQuestions = async (req, res) => {
+	const { id } = req.params;
+
+	try {
+		const questions = await fetchQuestionsService(id);
+		res.status(200).json(questions);
+	} catch (error) {
+		console.error("Error fetching questions:", error);
+		res.status(500).json({ error: "Failed to fetch questions" });
 	}
 };

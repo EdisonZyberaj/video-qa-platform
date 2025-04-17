@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
-
 function SurveyResponders({ currentUser }) {
 	const { id } = useParams();
 	const navigate = useNavigate();
