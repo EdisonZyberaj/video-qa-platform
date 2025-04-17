@@ -47,8 +47,14 @@ function Login() {
 			console.log("After res");
 			const { token } = response.data;
 
+			console.log(response.data);
+
+			const user_id = response.data.user.user_id;
+
+			console.log(user_id);
 			if (token) {
 				sessionStorage.setItem("token", token);
+				sessionStorage.setItem("user_id", user_id);
 
 				console.log("Token stored in sessionStorage:", token);
 

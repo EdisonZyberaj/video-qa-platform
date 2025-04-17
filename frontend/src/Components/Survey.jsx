@@ -7,7 +7,7 @@ import QuestionCard from "./QuestionCard.jsx";
 import { Eye } from "lucide-react";
 import axios from "axios";
 
-function Survey({ currentUser }) {
+function Survey() {
 	const { id } = useParams();
 	console.log(id);
 	const navigate = useNavigate();
@@ -18,7 +18,7 @@ function Survey({ currentUser }) {
 	useEffect(() => {
 		const fetchSurveyDetails = async () => {
 			try {
-				 // Retrieve the token from sessionStorage
+			
 				const token = sessionStorage.getItem("token");
 
 				if (!token) {
@@ -27,10 +27,9 @@ function Survey({ currentUser }) {
 					return;
 				}
 
-				// Make the authenticated request
 				const response = await axios.get(`http://localhost:5000/api/surveys/${id}`, {
 					headers: {
-						Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+						Authorization: `Bearer ${token}`, 
 					},
 				});
 
@@ -56,8 +55,6 @@ function Survey({ currentUser }) {
 			} catch (error) {
 				console.error("Error fetching survey details:", error);
 				setLoading(false);
-
-				// Redirect to login if unauthorized
 				if (error.response && error.response.status === 401) {
 					navigate("/login");
 				}

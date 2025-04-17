@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Menu, X, PlusCircle, Bell, User } from "lucide-react";
 import { Link } from "react-router-dom";
-import ProtectedLink from "./ProtectedLink"; // Import the reusable component
+import ProtectedLink from "./ProtectedLink";
 import logo from "../assets/logo.png";
 
 function Navbar() {
@@ -14,7 +14,6 @@ function Navbar() {
 					<img className="h-14 w-14" src={logo} alt="Logo" />
 				</Link>
 				<div className="hidden md:flex space-x-6">
-					{/* Use ProtectedLink for protected routes */}
 					<ProtectedLink to="/surveys">My Surveys</ProtectedLink>
 					<ProtectedLink to="/responder-surveys">
 						Responder Surveys

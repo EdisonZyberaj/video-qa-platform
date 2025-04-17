@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, Save } from "lucide-react";
+import axios from "axios";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 
@@ -61,14 +62,27 @@ const CATEGORIES = [
 	"PHOTOGRAPHY"
 ];
 
-function AddSurvey({ currentUser }) {
+function AddSurvey() {
 	const navigate = useNavigate();
+
 	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState(null);
 	const [surveyData, setSurveyData] = useState({
 		title: "",
 		description: "",
 		questions: [{ title: "", category: "TECHNOLOGY" }]
 	});
+
+	useEffect(
+		() => {
+			const token = sessionStorage.getItem("token");
+
+			if (!token) {
+				navigate("/login");
+			}
+		},
+		[navigate]
+	);
 
 	const handleSurveyChange = e => {
 		const { name, value } = e.target;
@@ -80,7 +94,9 @@ function AddSurvey({ currentUser }) {
 
 	const handleQuestionChange = (index, e) => {
 		const { name, value } = e.target;
+
 		const updatedQuestions = [...surveyData.questions];
+
 		updatedQuestions[index] = {
 			...updatedQuestions[index],
 			[name]: value
@@ -115,16 +131,50 @@ function AddSurvey({ currentUser }) {
 	const handleSubmit = async e => {
 		e.preventDefault();
 		setLoading(true);
+		setError(null);
 
 		try {
-			console.log("Submitting survey:", surveyData);
+			const token = sessionStorage.getItem("token");
 
-			setTimeout(() => {
-				setLoading(false);
-				navigate("/surveys");
-			}, 1000);
+			if (!token) {
+				setError("You are not authenticated. Please log in.");
+				navigate("/login");
+				return;
+			}
+			const authorId = sessionStorage.getItem("user_id");
+
+			console.log(authorId);
+
+			const payload = {
+				...surveyData,
+				authorId: parseInt(authorId, 10) || null
+			};
+
+			console.log("Submitting survey:", payload);
+			const response = await axios.post(
+				"http://localhost:5000/api/surveys/add-survey",
+				payload,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`
+					}
+				}
+			);
+
+			console.log("Survey created successfully:", response.data);
+
+			alert("Survey created successfully!");
+
+			navigate("/surveys");
 		} catch (error) {
 			console.error("Error creating survey:", error);
+			const errorMessage =
+				error.response && error.response.data && error.response.data.message
+					? error.response.data.message
+					: error.message || "An error occurred while creating the survey";
+
+			setError(errorMessage);
+		} finally {
 			setLoading(false);
 		}
 	};
@@ -154,12 +204,18 @@ function AddSurvey({ currentUser }) {
 					</p>
 				</div>
 
+				{error &&
+					<div className="max-w-3xl mx-auto mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+						<span className="block sm:inline">
+							{error}
+						</span>
+					</div>}
+
 				<form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
 					<div className="bg-white shadow-lg rounded-lg p-8 mb-8">
 						<h3 className="text-xl font-semibold text-darkBlue mb-6">
 							Survey Details
 						</h3>
-
 						<div className="mb-6">
 							<label
 								htmlFor="title"
@@ -195,7 +251,6 @@ function AddSurvey({ currentUser }) {
 							/>
 						</div>
 					</div>
-
 					<div className="bg-white shadow-lg rounded-lg p-8 mb-8">
 						<div className="flex justify-between items-center mb-6">
 							<h3 className="text-xl font-semibold text-darkBlue">
@@ -209,7 +264,6 @@ function AddSurvey({ currentUser }) {
 								Add Question
 							</button>
 						</div>
-
 						{surveyData.questions.map((question, index) =>
 							<div
 								key={index}
@@ -227,7 +281,6 @@ function AddSurvey({ currentUser }) {
 											Remove
 										</button>}
 								</div>
-
 								<div className="mb-4">
 									<label
 										htmlFor={`question-${index}`}
@@ -245,7 +298,6 @@ function AddSurvey({ currentUser }) {
 										required
 									/>
 								</div>
-
 								<div>
 									<label
 										htmlFor={`category-${index}`}
@@ -269,7 +321,6 @@ function AddSurvey({ currentUser }) {
 							</div>
 						)}
 					</div>
-
 					<div className="flex justify-center mt-8 mb-12">
 						<button
 							type="submit"
@@ -277,7 +328,7 @@ function AddSurvey({ currentUser }) {
 							className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-4 px-10 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center text-lg disabled:opacity-70">
 							{loading
 								? "Creating..."
-								: <div>
+								: <div className="flex items-center">
 										<Save className="w-5 h-5 mr-3" />
 										Create Survey
 									</div>}

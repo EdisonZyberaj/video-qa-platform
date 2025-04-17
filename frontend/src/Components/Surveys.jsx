@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 import SurveyImg from "../assets/surveyimg.png";
@@ -9,24 +10,35 @@ import { PlusCircle } from "lucide-react";
 function Surveys({ currentUser }) {
 	const [surveys, setSurveys] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
 
 	useEffect(() => {
-		// merr te dhena reale nga backendi
 		const fetchSurveys = async () => {
 			try {
-				const mockSurveys = [
-					{ id: 1, title: "Employee Satisfaction Survey" },
-					{ id: 2, title: "Product Feedback Survey" },
-					{ id: 3, title: "Work Environment Survey" },
-					{ id: 4, title: "Career Development Survey" },
-					{ id: 5, title: "Work Environment Survey" },
-					{ id: 6, title: "Career Development Survey" }
-				];
+				setLoading(true);
 
-				setSurveys(mockSurveys);
-				setLoading(false);
+				const token = sessionStorage.getItem("token");
+
+				if (!token) {
+					throw new Error("Authentication token not found");
+				}
+
+				const response = await axios.get(
+					"http://localhost:5000/api/surveys/my-surveys",
+					{
+						headers: {
+							Authorization: `Bearer ${token}`,
+							"Content-Type": "application/json"
+						}
+					}
+				);
+
+				setSurveys(response.data);
+				setError(null);
 			} catch (error) {
 				console.error("Error fetching surveys:", error);
+				setError("Failed to load surveys. Please try again later.");
+			} finally {
 				setLoading(false);
 			}
 		};
@@ -49,47 +61,63 @@ function Surveys({ currentUser }) {
 				</div>
 
 				{loading
-					? <div className="flex justify-center items-center " />
-					: <div>
-							{surveys.length > 0
-								? <div className="grid gap-6 md:grid-cols-2">
-										{surveys.map(survey =>
-											<Link
-												key={survey.id}
-												to={`/surveys/${survey.id}`}
-												className="block bg-white rounded-lg shadow-lg hover:shadow-xl overflow-hidden border border-lightBlue">
-												<div className="bg-mediumBlue h-3" />
-												<div className="p-8">
-													<span className="text-xl font-semibold text-darkBlue">
-														{survey.title}
-													</span>
-													<div className="flex justify-between items-center mt-6">
-														<span className="text-base text-softBlue">
-															5 questions
-														</span>
-														<span className="text-base font-medium text-mediumBlue">
-															View details →
-														</span>
-													</div>
-												</div>
-											</Link>
-										)}
-									</div>
-								: <div className="text-center py-16 bg-white rounded-xl shadow">
-										<p className="text-darkBlue/70">
-											No surveys available at the moment.
-										</p>
-									</div>}
-
-							<div className="flex justify-center mt-10">
-								<Link
-									to="/add-survey"
-									className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center">
-									<PlusCircle className="w-4 h-4 mr-4" />
-									ADD SURVEY
-								</Link>
+					? <div className="flex justify-center items-center">
+							<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-mediumBlue" />
+						</div>
+					: error
+						? <div className="text-center py-8 bg-white rounded-xl shadow">
+								<p className="text-red-500">
+									{error}
+								</p>
+								<button
+									onClick={() => window.location.reload()}
+									className="mt-4 bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-2 px-4 rounded">
+									Try Again
+								</button>
 							</div>
-						</div>}
+						: <div>
+								{surveys.length > 0
+									? <div className="grid gap-6 md:grid-cols-2">
+											{surveys.map(survey =>
+												<Link
+													key={survey.survey_id}
+													to={`/surveys/${survey.survey_id}`}
+													className="block bg-white rounded-lg shadow-lg hover:shadow-xl overflow-hidden border border-lightBlue">
+													<div className="bg-mediumBlue h-3" />
+													<div className="p-8">
+														<span className="text-xl font-semibold text-darkBlue">
+															{survey.title}
+														</span>
+														<div className="flex justify-between items-center mt-6">
+															<span className="text-base text-softBlue">
+																{survey.questions
+																	? survey.questions.length
+																	: 0}{" "}
+																questions
+															</span>
+															<span className="text-base font-medium text-mediumBlue">
+																View details →
+															</span>
+														</div>
+													</div>
+												</Link>
+											)}
+										</div>
+									: <div className="text-center py-16 bg-white rounded-xl shadow">
+											<p className="text-darkBlue/70">
+												No surveys available at the moment.
+											</p>
+										</div>}
+
+								<div className="flex justify-center mt-10">
+									<Link
+										to="/add-survey"
+										className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center">
+										<PlusCircle className="w-4 h-4 mr-4" />
+										ADD SURVEY
+									</Link>
+								</div>
+							</div>}
 			</main>
 
 			<Footer />

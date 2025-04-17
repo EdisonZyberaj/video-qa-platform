@@ -1,29 +1,73 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
 function UserProfile() {
-	// duhet te merren te dhenat e userit nga databaza postgres
-	const [user, setUser] = useState({
-		user_id: 1,
-		name: "Alex",
-		last_name: "Johnson",
-		email: "alex.johnson@example.com",
-		role: "ADMIN",
-		created_at: "2023-09-15T10:30:00Z",
-		surveysCount: 12,
-		questionsCount: 45,
-		answersCount: 128,
-		surveyVideosCount: 8
-	});
-
+	const [user, setUser] = useState(null);
 	const [activeTab, setActiveTab] = useState("details");
-	const [successMessage, setSuccessMessage] = useState(""); // per pergjigjen nga api
-	const handleUpdateProfile = e => {
+	const [successMessage, setSuccessMessage] = useState("");
+	const [error, setError] = useState(null);
+
+	useEffect(() => {
+		const fetchUserProfile = async () => {
+			try {
+				const token = sessionStorage.getItem("token");
+
+				if (!token) {
+					setError("You are not authenticated. Please log in.");
+					return;
+				}
+
+				const response = await axios.get(
+					"http://localhost:5000/api/user/profile",
+					{
+						headers: {
+							Authorization: `Bearer ${token}`
+						}
+					}
+				);
+
+				setUser(response.data);
+			} catch (error) {
+				console.error("Error fetching user profile:", error);
+				setError("Failed to fetch user profile. Please try again later.");
+			}
+		};
+
+		fetchUserProfile();
+	}, []);
+
+	const handleUpdateProfile = async e => {
 		e.preventDefault();
-		// API call per UPDATE
-		setSuccessMessage("Profile updated successfully!");
-		setTimeout(() => setSuccessMessage(""), 3000);
+		try {
+			const token = sessionStorage.getItem("token");
+
+			if (!token) {
+				setError("You are not authenticated. Please log in.");
+				return;
+			}
+
+			const response = await axios.put(
+				"http://localhost:5000/api/user/profile", // bej API per update profilt te userit
+				{
+					name: user.name,
+					last_name: user.last_name,
+					email: user.email
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${token}`
+					}
+				}
+			);
+
+			setSuccessMessage("Profile updated successfully!");
+			setTimeout(() => setSuccessMessage(""), 3000);
+		} catch (error) {
+			console.error("Error updating profile:", error);
+			setError("Failed to update profile. Please try again later.");
+		}
 	};
 
 	const formatDate = dateString => {
@@ -35,11 +79,37 @@ function UserProfile() {
 		});
 	};
 
+	if (error) {
+		return (
+			<div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white">
+				<Navbar />
+				<main className="container px-4 py-8 flex-grow">
+					<div className="text-center text-red-500">
+						{error}
+					</div>
+				</main>
+				<Footer />
+			</div>
+		);
+	}
+
+	if (!user) {
+		return (
+			<div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white">
+				<Navbar />
+				<main className="container px-4 py-8 flex-grow">
+					<div className="text-center">Loading...</div>
+				</main>
+				<Footer />
+			</div>
+		);
+	}
+
 	return (
 		<div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white">
 			<Navbar />
 
-			<main className="container px-4 py-8  flex-grow">
+			<main className="container px-4 py-8 flex-grow">
 				<div className="mx-15 px-10">
 					<div className="bg-white rounded-lg shadow-md p-6 mb-6 border-t-4 border-blue-600">
 						<div className="flex items-center justify-between mb-6">
@@ -74,7 +144,6 @@ function UserProfile() {
 						</div>
 					</div>
 
-					{/* kontrolli i tabs  */}
 					<div className="flex border-b border-gray-200 mb-6">
 						<button
 							className={`px-4 py-2 font-medium ${activeTab === "details"
