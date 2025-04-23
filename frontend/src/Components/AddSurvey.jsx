@@ -4,6 +4,8 @@ import { ArrowLeft, Plus, Trash2, Save } from "lucide-react";
 import axios from "axios";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CATEGORIES = [
 	"TECHNOLOGY",
@@ -128,7 +130,7 @@ function AddSurvey() {
 		});
 	};
 
-	const handleSubmit = async e => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setLoading(true);
 		setError(null);
@@ -143,37 +145,35 @@ function AddSurvey() {
 			}
 			const authorId = sessionStorage.getItem("user_id");
 
-			console.log(authorId);
-
 			const payload = {
 				...surveyData,
-				authorId: parseInt(authorId, 10) || null
+				authorId: parseInt(authorId, 10) || null,
 			};
 
-			console.log("Submitting survey:", payload);
 			const response = await axios.post(
 				"http://localhost:5000/api/surveys/add-survey",
 				payload,
 				{
 					headers: {
-						Authorization: `Bearer ${token}`
-					}
+						Authorization: `Bearer ${token}`,
+					},
 				}
 			);
 
-			console.log("Survey created successfully:", response.data);
+			toast.success("Survey created successfully!");
 
-			alert("Survey created successfully!");
-
-			navigate("/surveys");
+			// Delay navigation to allow the toast to appear
+			setTimeout(() => {
+				navigate("/surveys");
+			}, 2000); // 2-second delay
 		} catch (error) {
 			console.error("Error creating survey:", error);
 			const errorMessage =
-				error.response && error.response.data && error.response.data.message
-					? error.response.data.message
-					: error.message || "An error occurred while creating the survey";
+				error.response?.data?.message ||
+				error.message ||
+				"An error occurred while creating the survey";
 
-			setError(errorMessage);
+			toast.error(errorMessage);
 		} finally {
 			setLoading(false);
 		}
@@ -204,14 +204,8 @@ function AddSurvey() {
 					</p>
 				</div>
 
-				{error &&
-					<div className="max-w-3xl mx-auto mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-						<span className="block sm:inline">
-							{error}
-						</span>
-					</div>}
-
 				<form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+					{/* Survey Details */}
 					<div className="bg-white shadow-lg rounded-lg p-8 mb-8">
 						<h3 className="text-xl font-semibold text-darkBlue mb-6">
 							Survey Details
@@ -251,6 +245,8 @@ function AddSurvey() {
 							/>
 						</div>
 					</div>
+
+					{/* Survey Questions */}
 					<div className="bg-white shadow-lg rounded-lg p-8 mb-8">
 						<div className="flex justify-between items-center mb-6">
 							<h3 className="text-xl font-semibold text-darkBlue">
@@ -321,6 +317,8 @@ function AddSurvey() {
 							</div>
 						)}
 					</div>
+
+					{/* Submit Button */}
 					<div className="flex justify-center mt-8 mb-12">
 						<button
 							type="submit"
@@ -338,6 +336,19 @@ function AddSurvey() {
 			</main>
 
 			<Footer />
+
+			{/* Toast Container */}
+			<ToastContainer
+				position="top-center"
+				autoClose={5000}
+				hideProgressBar={false}
+				newestOnTop
+				closeOnClick
+				rtl={false}
+				pauseOnFocusLoss
+				draggable
+				pauseOnHover
+			/>
 		</div>
 	);
 }

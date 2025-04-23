@@ -5,7 +5,10 @@ import {
 	createSurveyWithQuestions,
 	getAllSurveys,
 	getSurveysByUserId,
-	getSurveyQuestions as fetchQuestionsService
+	getSurveyQuestions as fetchQuestionsService,
+	updateSurvey,
+	getSurveyResponders as getSurveyResponderService,
+	getResponderAnswers
 } from "../services/surveyService.js";
 
 dotenv.config();
@@ -65,7 +68,7 @@ export const getAllSurveysController = async (req, res) => {
 
 export const getUserSurveys = async (req, res) => {
 	try {
-		const userId = req.user.userId;
+		const userId = req.user.user_id;
 
 		const surveys = await getSurveysByUserId(userId);
 
@@ -84,5 +87,75 @@ export const getSurveyQuestions = async (req, res) => {
 	} catch (error) {
 		console.error("Error fetching questions:", error);
 		res.status(500).json({ error: "Failed to fetch questions" });
+	}
+};
+export const updateSurveyController = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const updateData = req.body;
+
+		if (Object.keys(updateData).length === 0) {
+			return res.status(400).json({ message: "No update fields provided" });
+		}
+
+		const updatedSurvey = await updateSurvey(id, updateData);
+		res.status(200).json({
+			message: "Survey updated successfully",
+			survey: updatedSurvey
+		});
+	} catch (error) {
+		console.error("Error updating survey:", error);
+		res.status(500).json({
+			message: "Failed to update survey",
+			error: error.message
+		});
+	}
+};
+export const getSurveyResponders = async (req, res) => {
+	const { id } = req.params;
+
+	try {
+		const survey = await fetchSurveyById(id);
+		const responders = await getSurveyResponderService(id);
+
+		res.status(200).json({
+			survey,
+			responders
+		});
+	} catch (error) {
+		console.error("Error fetching survey responders:", error);
+		res.status(500).json({ error: "Failed to fetch survey responders" });
+	}
+};
+export const getResponderAnswersController = async (req, res) => {
+	const { surveyId, responderId } = req.params;
+
+	try {
+		const survey = await fetchSurveyById(surveyId);
+		const responder = await prisma.user.findUnique({
+			where: { user_id: parseInt(responderId) },
+			select: {
+				user_id: true,
+				name: true,
+				last_name: true,
+				email: true,
+				role: true
+			}
+		});
+
+		if (!responder) {
+			return res.status(404).json({ error: "Responder not found" });
+		}
+
+		const answers = await getResponderAnswers(surveyId, responderId);
+
+		res.status(200).json({
+			survey,
+			responder,
+			answers
+		});
+	} catch (error) {
+		console.error("Error fetching responder answers:", error);
+		res.status(500).json({ error: "Failed to fetch responder answers" });
 	}
 };

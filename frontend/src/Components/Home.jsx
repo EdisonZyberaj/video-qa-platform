@@ -6,7 +6,7 @@ import Intro from "../assets/intro.jpg";
 import SignUp from "../assets/sign-up-icon.png";
 import LinkImg from "../assets/shareable-link.png";
 import qaImg from "../assets/q&a.png";
-
+import ProtectedLink from "./ProtectedLink";
 function Home() {
 	return (
 		<div className="bg-white min-h-screen">
@@ -23,11 +23,11 @@ function Home() {
 						allowing you to learn directly from their experience. Get the
 						insights you need, delivered in a clear and engaging format."
 					</p>
-					<Link
-						to="/"
+					<ProtectedLink
+						to="/surveys"
 						className="bg-mediumBlue text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-hoverBlue">
 						Get Started
-					</Link>
+					</ProtectedLink>
 				</div>
 				<div className="w-full md:w-1/2 flex justify-center">
 					<img
@@ -44,7 +44,7 @@ function Home() {
 			</h1>
 			<section
 				id="how-it-works"
-				className="flex flex-col sm:flex-row bg-white text-black px-6 mt-110 py-20 pl-20">
+				className="flex flex-col sm:flex-row bg-white text-black px-6 mt-110 py-20 pl-20 justify-center items-center">
 				<div className="w-full md:w-1/2 max-w-md px-6 text-center md:text-left">
 					<div className="text-mediumBlue font-semibold mb-4">STEP 1</div>
 					<div className="flex flex-col items-center">

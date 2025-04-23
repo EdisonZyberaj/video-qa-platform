@@ -1,4 +1,3 @@
-// controllers/answerController.js
 import { PrismaClient } from "@prisma/client";
 import {
 	addAnswer,

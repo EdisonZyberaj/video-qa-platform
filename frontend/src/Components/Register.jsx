@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Logo from "../assets/logo1.png";
 import { FcGoogle } from "react-icons/fc";
 import FirstLogo from "../assets/firstLogo.png";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Register() {
 	const [name, setName] = useState("");
@@ -17,6 +18,20 @@ function Register() {
 	const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 	const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\b(email|example|yourusername)\b).{6,}$/;
 
+	useEffect(
+		() => {
+			const token = sessionStorage.getItem("token");
+			if (token) {
+				toast.info(`You are already logged in.`, {
+					position: "top-center",
+					autoClose: 3000
+				});
+				navigate("/");
+			}
+		},
+		[navigate]
+	);
+
 	const handleRegister = async e => {
 		e.preventDefault();
 		setError("");
@@ -27,28 +42,40 @@ function Register() {
 		const trimmedPassword = password.trim();
 
 		if (!trimmedName || !trimmedLastName || !trimmedEmail || !trimmedPassword) {
-			setError("All fields are required.");
+			toast.error("All fields are required.", {
+				position: "top-center",
+				autoClose: 3000
+			});
 			return;
 		}
 
 		if (!emailPattern.test(trimmedEmail)) {
-			setError("Please enter a valid email address.");
+			toast.error("Please enter a valid email address.", {
+				position: "top-center",
+				autoClose: 3000
+			});
 			return;
 		}
 
 		if (trimmedPassword.length < 6) {
-			setError("Password must be at least 6 characters.");
+			toast.error("Password must be at least 6 characters.", {
+				position: "top-center",
+				autoClose: 3000
+			});
 			return;
 		}
 
 		if (!passwordPattern.test(trimmedPassword)) {
-			setError(
-				"Password must contain at least one uppercase letter, one lowercase letter, one number, and cannot contain your email name."
+			toast.error(
+				"Password must contain at least one uppercase letter, one lowercase letter, one number, and cannot contain your email name.",
+				{
+					position: "top-center",
+					autoClose: 3000
+				}
 			);
 			return;
 		}
 
-		console.log(trimmedEmail, trimmedLastName, trimmedName, trimmedPassword);
 		try {
 			const response = await axios.post(
 				"http://localhost:5000/api/auth/register",
@@ -61,7 +88,7 @@ function Register() {
 				}
 			);
 			if (response.status === 201) {
-				toast.success(response.data.message, {
+				toast.success("You have registered successfully!", {
 					position: "top-center",
 					autoClose: 3000
 				});
@@ -71,7 +98,10 @@ function Register() {
 				}, 3000);
 			}
 		} catch (err) {
-			setError("An error occurred. Please try again.");
+			toast.error("An error occurred. Please try again.", {
+				position: "top-center",
+				autoClose: 3000
+			});
 		}
 	};
 

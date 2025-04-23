@@ -76,7 +76,7 @@ function Questions() {
 						)}
 					</div>
 				</div>
-				// mund ta perdor per front enhacement
+				{/* // mund ta perdor per front enhacement */}
 				<div className="w-full lg:w-1/3 bg-gray-200 p-6 mt-6 lg:mt-0 rounded-lg shadow-lg">
 					<div className="mb-6">
 						<h2 className="text-xl font-bold mb-2 flex items-center text-gray-800">

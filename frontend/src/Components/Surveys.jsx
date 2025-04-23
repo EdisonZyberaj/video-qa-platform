@@ -7,7 +7,7 @@ import Footer from "./Footer.jsx";
 import SurveyImg from "../assets/surveyimg.png";
 import { PlusCircle } from "lucide-react";
 
-function Surveys({ currentUser }) {
+function Surveys() {
 	const [surveys, setSurveys] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);

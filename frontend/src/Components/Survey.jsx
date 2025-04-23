@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 import QuestionCard from "./QuestionCard.jsx";
-import { Eye } from "lucide-react";
+import { Eye, Save } from "lucide-react";
 import axios from "axios";
 
 function Survey() {
@@ -119,12 +119,22 @@ function Survey() {
 								</div>
 							</div>
 
-							<div className="flex justify-center mt-10">
+							<div className="flex justify-center mt-10 space-x-4">
+								
 								<button
 									onClick={handleViewAnswers}
-									className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center">
+									className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center"
+								>
 									<Eye className="w-5 h-5 mr-4" />
 									VIEW ANSWERS
+								</button>
+
+								<button
+									onClick={() => navigate(`update-survey`)}
+									className="bg-darkBlue hover:bg-hoverBlue text-white font-medium py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex items-center"
+								>
+									<Save className="w-5 h-5 mr-4" />
+									EDIT SURVEY
 								</button>
 							</div>
 						</div>}

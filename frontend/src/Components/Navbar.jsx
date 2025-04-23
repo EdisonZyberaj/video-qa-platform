@@ -22,17 +22,14 @@ function Navbar() {
 					<Link to="/">Home</Link>
 				</div>
 				<div className="hidden md:flex items-center space-x-4 ml-6">
-					<ProtectedLink to="/notifications" className="hover:text-gray-400">
-						<Bell size={20} />
-					</ProtectedLink>
 					<ProtectedLink to="/userProfile" className="hover:text-gray-400">
 						<User size={20} />
 					</ProtectedLink>
 					<ProtectedLink
-						to="/ask"
+						to="/add-survey"
 						className="bg-mediumBlue hover:bg-hoverBlue px-4 py-2 rounded-md flex items-center transition">
 						<PlusCircle size={18} className="mr-1" />
-						<span>Ask Question</span>
+						<span>Add Survey</span>
 					</ProtectedLink>
 				</div>
 				<button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
@@ -41,22 +38,23 @@ function Navbar() {
 			</div>
 			{isOpen &&
 				<div className="md:hidden flex flex-col items-center space-y-4 mt-4">
-					<ProtectedLink to="/questions">Questions</ProtectedLink>
+					<ProtectedLink to="/surveys">My Surveys</ProtectedLink>
+					<ProtectedLink to="/responder-surveys">
+						Responder Surveys
+					</ProtectedLink>
 					<ProtectedLink to="/record" className="hover:text-gray-400">
 						Record
-					</ProtectedLink>
-					<ProtectedLink to="/surveys" className="hover:text-gray-400">
-						My Surveys
 					</ProtectedLink>
 					<Link to="/" className="hover:text-gray-400">
 						Home
 					</Link>
 					<ProtectedLink to="/userProfile" className="hover:text-gray-400">
-						Profile
+						<User size={20} />
 					</ProtectedLink>
 					<ProtectedLink
-						to="/ask"
-						className="bg-mediumBlue hover:bg-hoverBlue px-4 py-2 rounded-md w-full text-center transition">
+						to="/add-survey"
+						className="bg-mediumBlue hover:bg-hoverBlue px-4 py-2 rounded-md w-full text-center transition flex items-center">
+						<PlusCircle size={18} className="mr-1" />
 						Ask Question
 					</ProtectedLink>
 				</div>}

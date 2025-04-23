@@ -1,8 +1,6 @@
 import React from "react";
 import { useState } from "react";
 import "./App.css";
-import Navbar from "./Components/Navbar";
-import Footer from "./Components/Footer";
 import Home from "./Components/Home.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Components/Login.jsx";
@@ -13,12 +11,13 @@ import UserProfile from "./Components/UserProfile.jsx";
 import Surveys from "./Components/Surveys.jsx";
 import ResponderSurveys from "./Components/ResponderSurveys.jsx";
 import Survey from "./Components/Survey.jsx";
-import Answers from "./Components/Answers.jsx";
+import Answers from "./Components/ResponderAnswers.jsx";
 import SurveyResponders from "./Components/SurveyResponders.jsx";
-import ResponderAnswers from "./Components/Answers.jsx";
+import ResponderAnswers from "./Components/ResponderAnswers.jsx";
 import AnswerQuestion from "./Components/AnswerQuestion.jsx";
 import ResponderSurvey from "./Components/ResponderSurvey.jsx";
-import AddSurvey from "./Components/AddSurvey";
+import AddSurvey from "./Components/AddSurvey.jsx";
+import EditSurvey from "./Components/EditSurvey.jsx";
 
 function App() {
 	return (
@@ -39,12 +38,13 @@ function App() {
 				<Route path="/responder-survey/:id" element={<ResponderSurvey />} />
 				<Route
 					path="/survey/:id/responder/:responderId"
-					element={<ResponderAnswers />}
+					element={<ResponderAnswers />} //shfaq pergjigjet qe ka dhene nje responder
 				/>
 				<Route
 					path="/survey/:id/question/:questionId/answer"
 					element={<AnswerQuestion />}
 				/>
+				<Route path="surveys/:id/update-survey" element={<EditSurvey />} />
 			</Routes>
 		</BrowserRouter>
 	);

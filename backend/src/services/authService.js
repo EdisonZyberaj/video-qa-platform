@@ -49,5 +49,6 @@ export const loginUser = async ({ email, password }) => {
 		{ expiresIn: process.env.JWT_EXPIRES_IN || "1h" }
 	);
 
+	console.log("u logoveee");
 	return { token, user };
 };

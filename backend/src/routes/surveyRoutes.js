@@ -4,7 +4,10 @@ import {
 	addSurveyWithQuestions,
 	getAllSurveysController,
 	getUserSurveys,
-	getSurveyQuestions
+	getSurveyQuestions,
+	updateSurveyController,
+	getSurveyResponders,
+	getResponderAnswersController
 } from "../controllers/surveyController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
@@ -16,5 +19,7 @@ router.get("/my-surveys", getUserSurveys);
 router.get("/:id", getSurveyById);
 router.get("/:id/questions", getSurveyQuestions);
 router.post("/add-survey", addSurveyWithQuestions);
-
+router.patch("/:id/update-survey", updateSurveyController);
+router.get("/:id/responders", getSurveyResponders);
+router.get("/:surveyId/responder/:responderId", getResponderAnswersController);
 export default router;
