@@ -1,7 +1,8 @@
 import express from "express";
 import {
 	submitAnswer,
-	getQuestionAnswers
+	getQuestionAnswers,
+	getResponderAnswers
 } from "../controllers/answerController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
@@ -12,5 +13,7 @@ router.use(authMiddleware);
 router.post("/submit", submitAnswer);
 
 router.get("/question/:questionId", getQuestionAnswers);
+
+router.get("/survey/:surveyId/responder/:responderId", getResponderAnswers);
 
 export default router;

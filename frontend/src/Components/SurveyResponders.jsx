@@ -133,8 +133,8 @@ function SurveyResponders({ currentUser }) {
 						</span>
 						<button
 							className="mt-4 bg-mediumBlue hover:bg-darkBlue text-white font-bold py-2 px-4 rounded"
-							onClick={() => navigate("/dashboard")}>
-							Return to Dashboard
+							onClick={() => navigate("/")}>
+							Return to Home
 						</button>
 					</div>
 				</main>

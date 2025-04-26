@@ -3,87 +3,87 @@ import { useParams, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
+import axios from "axios";
 
-function ResponderAnswers({ currentUser }) {
+function ResponderAnswers() {
 	const { id, responderId } = useParams();
 	const navigate = useNavigate();
 	const [responder, setResponder] = useState(null);
 	const [answers, setAnswers] = useState([]);
 	const [videoData, setVideoData] = useState(null);
 	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
 
 	useEffect(
 		() => {
 			const fetchResponderAnswers = async () => {
 				try {
-					// const responderResponse = await fetch(`/api/users/${responderId}`);
-					// const answersResponse = await fetch(`/api/surveys/${id}/responder/${responderId}/answers`);
-					// const videoResponse = await fetch(`/api/surveys/${id}/responder/${responderId}/video`);
+					const token = sessionStorage.getItem("token");
 
-					const mockResponder = {
-						user_id: parseInt(responderId),
-						name: "Maria",
-						last_name: "Garcia",
-						email: "maria.garcia@example.com",
-						role: "RESPONDER",
-						created_at: "2025-01-15T09:45:00Z",
-						response_date: "2025-04-07T12:45:00Z"
-					};
-					const mockAnswers = [
-						{
-							answer_Id: 101,
-							questionId: 1,
-							text:
-								"I've found React hooks to be the most challenging aspect initially, especially managing complex state with useEffect. Custom hooks helped organize my code better, and understanding the dependency array was crucial for optimization.",
-							created_at: "2025-04-07T12:30:00Z",
-							question: {
-								question_id: 1,
-								title:
-									"What challenges have you faced implementing React in your projects?",
-								category: "WEB_DEVELOPMENT"
-							}
-						},
-						{
-							answer_Id: 102,
-							questionId: 2,
-							text:
-								"Remote work has significantly improved my productivity by eliminating commute time and office distractions. I've established a dedicated workspace and set clear boundaries between work and personal time. The flexibility allows me to work during my most productive hours.",
-							created_at: "2025-04-07T12:35:00Z",
-							question: {
-								question_id: 2,
-								title:
-									"How has remote work affected your productivity and work-life balance?",
-								category: "CAREER_ADVICE"
-							}
-						},
-						{
-							answer_Id: 103,
-							questionId: 3,
-							text:
-								"I would benefit most from mentorship opportunities with senior designers and access to advanced UX research tools. Regular feedback sessions with stakeholders would also help me understand the business impact of my designs better.",
-							created_at: "2025-04-07T12:40:00Z",
-							question: {
-								question_id: 3,
-								title:
-									"What resources would help you advance your career at our company?",
-								category: "CAREER_ADVICE"
-							}
+					if (!token) {
+						throw new Error("Authentication token not found");
+					}
+
+					const config = {
+						headers: {
+							Authorization: `Bearer ${token}`
 						}
-					];
-					const mockVideoData = {
-						servey_video_id: 25,
-						question_link:
-							"https://storage.example.com/videos/survey123/maria_garcia_response.mp4",
-						surveyId: parseInt(id),
-						uploaderId: parseInt(responderId)
 					};
 
-					setResponder(mockResponder);
-					setAnswers(mockAnswers);
-					setVideoData(mockVideoData);
+					const responderResponse = await axios.post(
+						`http://localhost:5000/api/user/get-by-ids`,
+						{
+							userIds: [parseInt(responderId)]
+						},
+						config
+					);
+
+					if (!responderResponse.data || responderResponse.data.length === 0) {
+						throw new Error("Responder not found");
+					}
+
+					const responderData = responderResponse.data[0];
+
+					let answersData = [];
+					try {
+						const answersResponse = await axios.get(
+							`http://localhost:5000/api/answers/survey/${id}/responder/${responderId}`,
+							config
+						);
+						answersData = answersResponse.data;
+					} catch (answersError) {
+						console.error("Error fetching answers:", answersError);
+					}
+
+					let videoData = null;
+					try {
+						const videoResponse = await axios.get(
+							`http://localhost:5000/api/videos/survey/${id}/responder/${responderId}`,
+							config
+						);
+
+						if (videoResponse.data) {
+							videoData = videoResponse.data;
+						}
+					} catch (videoError) {
+						console.log("No video found or error fetching video:", videoError);
+					}
+					const answerDates = answersData.map(
+						answer => new Date(answer.created_at)
+					);
+					const latestDate =
+						answerDates.length > 0 ? new Date(Math.max(...answerDates)) : null;
+
+					setResponder({
+						...responderData,
+						response_date: latestDate ? latestDate.toISOString() : null
+					});
+					setAnswers(answersData);
+					setVideoData(videoData);
 					setLoading(false);
 				} catch (error) {
 					console.error("Error fetching responder answers:", error);
+					setError(error.message || "Failed to load data");
 					setLoading(false);
 				}
 			};
@@ -98,6 +98,7 @@ function ResponderAnswers({ currentUser }) {
 	};
 
 	const formatDate = dateString => {
+		if (!dateString) return "Unknown date";
 		const date = new Date(dateString);
 		return new Intl.DateTimeFormat("en-US", {
 			month: "short",
@@ -125,6 +126,50 @@ function ResponderAnswers({ currentUser }) {
 					<div className="flex justify-center items-center h-64">
 						<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mediumBlue" />
 					</div>
+				</main>
+				<Footer />
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="flex flex-col min-h-screen bg-gradient-to-b from-lightBlue/30 to-lightBlue/50">
+				<Navbar />
+				<main className="container mx-auto flex-grow py-12 px-4 max-w-5xl">
+					<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+						<strong className="font-bold">Error: </strong>
+						<span className="block sm:inline">
+							{error}
+						</span>
+					</div>
+					<button
+						onClick={handleBackToResponders}
+						className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-2 px-6 rounded-md transition-colors duration-200">
+						Back to All Responders
+					</button>
+				</main>
+				<Footer />
+			</div>
+		);
+	}
+
+	if (!responder) {
+		return (
+			<div className="flex flex-col min-h-screen bg-gradient-to-b from-lightBlue/30 to-lightBlue/50">
+				<Navbar />
+				<main className="container mx-auto flex-grow py-12 px-4 max-w-5xl">
+					<div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-6">
+						<strong className="font-bold">Not Found: </strong>
+						<span className="block sm:inline">
+							Responder information could not be loaded.
+						</span>
+					</div>
+					<button
+						onClick={handleBackToResponders}
+						className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-2 px-6 rounded-md transition-colors duration-200">
+						Back to All Responders
+					</button>
 				</main>
 				<Footer />
 			</div>
@@ -167,9 +212,10 @@ function ResponderAnswers({ currentUser }) {
 								<h1 className="text-2xl font-bold text-white">
 									{responder.name} {responder.last_name}
 								</h1>
-								<p className="text-white/80">
-									Responses submitted on {formatDate(responder.response_date)}
-								</p>
+								{responder.response_date &&
+									<p className="text-white/80">
+										Responses submitted on {formatDate(responder.response_date)}
+									</p>}
 							</div>
 						</div>
 					</div>
@@ -179,32 +225,38 @@ function ResponderAnswers({ currentUser }) {
 					Answers ({answers.length})
 				</h2>
 
-				<div className="space-y-6 mb-10">
-					{answers.map(answer =>
-						<div
-							key={answer.answer_Id}
-							className="bg-white rounded-xl shadow-md overflow-hidden">
-							<div className="border-b border-lightBlue/30 bg-lightBlue/20 px-6 py-4">
-								<div className="flex items-center justify-between">
-									<h3 className="font-medium text-darkBlue">
-										{answer.question.title}
-									</h3>
-									<span className="px-3 py-1 bg-lightBlue/30 text-darkBlue rounded-full text-xs font-medium">
-										{getCategoryDisplayName(answer.question.category)}
-									</span>
-								</div>
-							</div>
-							<div className="px-6 py-5">
-								<p className="text-darkBlue/80 whitespace-pre-line">
-									{answer.text}
-								</p>
-								<p className="text-xs text-softBlue mt-4">
-									Answered on {formatDate(answer.created_at)}
-								</p>
-							</div>
+				{answers.length === 0
+					? <div className="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-10">
+							<p className="text-darkBlue/80">
+								No answers submitted by this responder yet.
+							</p>
 						</div>
-					)}
-				</div>
+					: <div className="space-y-6 mb-10">
+							{answers.map(answer =>
+								<div
+									key={answer.answer_id}
+									className="bg-white rounded-xl shadow-md overflow-hidden">
+									<div className="border-b border-lightBlue/30 bg-lightBlue/20 px-6 py-4">
+										<div className="flex items-center justify-between">
+											<h3 className="font-medium text-darkBlue">
+												{answer.question.title}
+											</h3>
+											<span className="px-3 py-1 bg-lightBlue/30 text-darkBlue rounded-full text-xs font-medium">
+												{getCategoryDisplayName(answer.question.category)}
+											</span>
+										</div>
+									</div>
+									<div className="px-6 py-5">
+										<p className="text-darkBlue/80 whitespace-pre-line">
+											{answer.text}
+										</p>
+										<p className="text-xs text-softBlue mt-4">
+											Answered on {formatDate(answer.created_at)}
+										</p>
+									</div>
+								</div>
+							)}
+						</div>}
 
 				{videoData &&
 					<div className="mb-10">

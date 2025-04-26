@@ -16,6 +16,8 @@ const authMiddleware = (req, res, next) => {
 		const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
 		req.user = {
+			// modifikohet req objekti para se te ekzekutohet kontrolleri
+			//prandaj cohen kto te dhena atje
 			user_id: decoded.userId,
 			email: decoded.email,
 			role: decoded.role

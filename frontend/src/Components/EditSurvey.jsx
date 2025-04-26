@@ -99,7 +99,7 @@ function EditSurvey() {
   const fetchSurvey = () => {
     const token = sessionStorage.getItem("token");
     
-    axios.get(
+    axios.get(   //  perdor async await
       `http://localhost:5000/api/surveys/${id}`,
       { headers: { Authorization: `Bearer ${token}` } }
     )
@@ -147,7 +147,6 @@ function EditSurvey() {
     });
   };
 
-  // Question management
   const addQuestion = () => {
     const authorId = parseInt(sessionStorage.getItem("user_id"), 10);
     setNewQuestions(prev => [
@@ -159,7 +158,6 @@ function EditSurvey() {
         authorId: authorId
       }
     ]);
-    // Show a temporary success message
     toast.info("Question added. Remember to save your changes.");
   };
 

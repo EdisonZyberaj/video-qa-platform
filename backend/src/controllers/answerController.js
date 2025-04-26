@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import {
 	addAnswer,
-	getAnswersByQuestionId
+	getAnswersByQuestionId,
+	getAnswersBySurveyAndResponderId
 } from "../services/answerService.js";
 
 const prisma = new PrismaClient();
@@ -61,5 +62,21 @@ export const getQuestionAnswers = async (req, res) => {
 	} catch (error) {
 		console.error("Error fetching answers:", error);
 		res.status(500).json({ error: error.message || "Failed to fetch answers" });
+	}
+};
+export const getResponderAnswers = async (req, res) => {
+	const { surveyId, responderId } = req.params;
+
+	try {
+		const answers = await getAnswersBySurveyAndResponderId(
+			surveyId,
+			responderId
+		);
+		res.status(200).json(answers);
+	} catch (error) {
+		console.error("Error fetching responder answers:", error);
+		res
+			.status(500)
+			.json({ error: error.message || "Failed to fetch responder answers" });
 	}
 };

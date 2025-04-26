@@ -80,6 +80,7 @@ function AddSurvey() {
 			const token = sessionStorage.getItem("token");
 
 			if (!token) {
+				 toast.error("You are not authenticated"); 
 				navigate("/login");
 			}
 		},
@@ -162,10 +163,9 @@ function AddSurvey() {
 
 			toast.success("Survey created successfully!");
 
-			// Delay navigation to allow the toast to appear
 			setTimeout(() => {
 				navigate("/surveys");
-			}, 2000); // 2-second delay
+			}, 2000); 
 		} catch (error) {
 			console.error("Error creating survey:", error);
 			const errorMessage =
@@ -337,13 +337,12 @@ function AddSurvey() {
 
 			<Footer />
 
-			{/* Toast Container */}
 			<ToastContainer
 				position="top-center"
 				autoClose={5000}
 				hideProgressBar={false}
 				newestOnTop
-				closeOnClick
+				closeOnClicks
 				rtl={false}
 				pauseOnFocusLoss
 				draggable
