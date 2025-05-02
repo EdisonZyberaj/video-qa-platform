@@ -53,7 +53,6 @@ function ResponderSurvey() {
           console.log("No previous answers found");
         }
         
-        // Check if user has uploaded a video for this survey
         try {
           const videoResponse = await axios.get(
             `http://localhost:5000/api/answers/survey/${id}/video/${userId}`,
@@ -81,12 +80,10 @@ function ResponderSurvey() {
     fetchSurveyData();
   }, [id, navigate]);
 
-  // Function to check if a question has been answered
   const isQuestionAnswered = (questionId) => {
     return userAnswers.some(answer => answer.questionId === questionId);
   };
 
-  // Check if all questions are answered
   const allQuestionsAnswered = () => {
     if (questions.length === 0) return false;
     return questions.every(question => isQuestionAnswered(question.question_id));

@@ -233,8 +233,7 @@ function ResponderAnswers() {
 				{answers.length === 0 ? (
 					<div className="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-10">
 						<p className="text-darkBlue/80">
-							No answers submitted by this responder yet.
-						</p>
+							No answers submitted by this responder yet.</p>
 					</div>
 				) : (
 					<div className="space-y-6 mb-10">

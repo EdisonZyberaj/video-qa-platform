@@ -2,9 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 function QuestionCard({ question, isAnswered, surveyId }) {
-	// Function to format category text (replace underscores with spaces and capitalize)
 	const formatCategory = category => {
-		// Check if category is undefined or null
 		if (!category) {
 			return "Uncategorized";
 		}

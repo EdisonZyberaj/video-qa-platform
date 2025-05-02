@@ -21,101 +21,125 @@ export const addAnswer = async ({ text, authorId, surveyId, questionId }) => {
 		throw error;
 	}
 };
-export const uploadVideoAnswer = async (videoFile, surveyId, userId) => {
-	try {
-		console.log(
-			`Attempting to upload video: ${videoFile.originalname} for survey ${surveyId} by user ${userId}`
-		);
+// Improved video upload helper function
+const uploadVideoAnswer = async (videoFile, surveyId, userId) => {
+  try {
+    console.log(
+      `Attempting to upload video: ${videoFile.originalname} for survey ${surveyId} by user ${userId}`
+    );
 
-		// Validate inputs
-		if (!videoFile || !videoFile.buffer) {
-			throw new Error("Invalid video file");
-		}
+    // Validate inputs
+    if (!videoFile || !videoFile.buffer) {
+      throw new Error("Invalid video file");
+    }
 
-		if (!surveyId || !userId) {
-			throw new Error("Missing surveyId or userId");
-		}
+    if (!surveyId || !userId) {
+      throw new Error("Missing surveyId or userId");
+    }
 
-		// Check folder ID exists
-		const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-		if (!folderId) {
-			throw new Error(
-				"GOOGLE_DRIVE_FOLDER_ID is not set in environment variables"
-			);
-		}
+    // Get folder ID from environment or use fallback
+    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || "1NZ9mYYUALmOsgvB6TFJrS6iiTR4FXuWM";
+    
+    console.log("Using Google Drive folder ID:", folderId);
+    console.log("Video file details:", {
+      filename: videoFile.originalname,
+      mimetype: videoFile.mimetype,
+      size: `${(videoFile.size / (1024 * 1024)).toFixed(2)} MB`
+    });
+    
+    // Create a readable stream from the buffer
+    const stream = require('stream');
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(videoFile.buffer);
 
-		console.log("Creating readable stream from buffer...");
-		// Create a readable stream from the buffer
-		const stream = Readable.from(videoFile.buffer);
+    console.log("Uploading file to Google Drive...");
+    // Upload the file to Google Drive with more detailed error reporting
+    try {
+      const response = await drive.files.create({
+        requestBody: {
+          name: `survey_${surveyId}_user_${userId}_${Date.now()}.${videoFile.originalname.split('.').pop()}`,
+          parents: [folderId],
+          mimeType: videoFile.mimetype
+        },
+        media: {
+          mimeType: videoFile.mimetype,
+          body: bufferStream
+        },
+        fields: "id, name, webViewLink, webContentLink"
+      });
+      
+      console.log("File uploaded successfully, ID:", response.data.id);
+      
+      // Make the file publicly accessible
+      try {
+        await drive.permissions.create({
+          fileId: response.data.id,
+          requestBody: {
+            role: "reader",
+            type: "anyone"
+          }
+        });
+        console.log("Permissions set successfully");
+      } catch (permError) {
+        console.error("Error setting permissions:", permError);
+        if (permError.response) {
+          console.error("Permission error data:", permError.response.data);
+        }
+        throw new Error("Failed to set file permissions");
+      }
 
-		console.log("Uploading file to Google Drive...");
-		// Upload the file to Google Drive
-		const response = await drive.files.create({
-			requestBody: {
-				name: videoFile.originalname,
-				parents: [folderId],
-				mimeType: videoFile.mimetype
-			},
-			media: {
-				mimeType: videoFile.mimetype,
-				body: stream
-			},
-			fields: "id, name, webViewLink, webContentLink"
-		});
+      // Get the public URL
+      const file = await drive.files.get({
+        fileId: response.data.id,
+        fields: "webViewLink, webContentLink"
+      });
 
-		console.log("File uploaded successfully. Setting permissions...");
-		// Make the file publicly accessible
-		await drive.permissions.create({
-			fileId: response.data.id,
-			requestBody: {
-				role: "reader",
-				type: "anyone"
-			}
-		});
+      const videoUrl = file.data.webViewLink || file.data.webContentLink;
 
-		console.log("Permissions set. Getting file URL...");
-		// Get the public URL
-		const file = await drive.files.get({
-			fileId: response.data.id,
-			fields: "webViewLink, webContentLink"
-		});
+      if (!videoUrl) {
+        throw new Error("No video URL received from Google Drive");
+      }
 
-		const videoUrl = file.data.webViewLink || file.data.webContentLink;
+      console.log("Video URL obtained:", videoUrl);
+      console.log("Saving video reference in database...");
 
-		if (!videoUrl) {
-			throw new Error("No video URL received from Google Drive");
-		}
+      // Save the video reference in the database
+      const videoAnswer = await prisma.survey_Video.create({
+        data: {
+          question_link: videoUrl,
+          surveyId: parseInt(surveyId),
+          uploaderId: parseInt(userId)
+        }
+      });
 
-		console.log("Video URL obtained:", videoUrl);
-		console.log("Saving video reference in database...");
+      console.log("Video reference saved successfully:", videoAnswer);
+      return videoAnswer;
+    } catch (uploadError) {
+      console.error("Error in upload to Google Drive:");
+      if (uploadError.response) {
+        console.error("Status:", uploadError.response.status);
+        console.error("Response data:", JSON.stringify(uploadError.response.data));
+      } else {
+        console.error("Error message:", uploadError.message);
+      }
+      throw new Error(`Failed to upload file: ${uploadError.message}`);
+    }
+  } catch (error) {
+    console.error("Error uploading video answer:", error);
 
-		// Save the video reference in the database
-		const videoAnswer = await prisma.survey_Video.create({
-			data: {
-				question_link: videoUrl,
-				surveyId: parseInt(surveyId),
-				uploaderId: parseInt(userId)
-			}
-		});
+    // Add detailed error information
+    if (error.message?.includes("invalid_client")) {
+      console.error(
+        "Authentication error with Google Drive API. Please check your credentials."
+      );
+    } else if (error.message?.includes("invalid_grant")) {
+      console.error(
+        "Your refresh token may have expired. Please generate a new refresh token."
+      );
+    }
 
-		console.log("Video reference saved successfully:", videoAnswer);
-		return videoAnswer;
-	} catch (error) {
-		console.error("Error uploading video answer:", error);
-
-		// Add detailed error information
-		if (error.message.includes("invalid_client")) {
-			console.error(
-				"Authentication error with Google Drive API. Please check your credentials."
-			);
-		} else if (error.message.includes("invalid_grant")) {
-			console.error(
-				"Your refresh token may have expired. Please generate a new refresh token."
-			);
-		}
-
-		throw error;
-	}
+    throw error;
+  }
 };
 
 export const getAnswersByQuestionId = async questionId => {

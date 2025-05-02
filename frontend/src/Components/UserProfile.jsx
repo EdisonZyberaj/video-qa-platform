@@ -388,7 +388,6 @@ function UserProfile() {
 								Security Settings
 							</h3>
 
-							{/* Password Change Form */}
 							<div className="border border-gray-200 rounded-lg p-4 mb-6">
 								<h4 className="font-medium text-darkBlue mb-4">
 									Change Password

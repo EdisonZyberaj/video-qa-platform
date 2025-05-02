@@ -206,7 +206,6 @@ export const getSurveyResponders = async surveyId => {
 			}
 		});
 
-		// Process the data to get unique responders with counts
 		const responderMap = {};
 		answers.forEach(answer => {
 			const userId = answer.author.user_id;
@@ -219,14 +218,12 @@ export const getSurveyResponders = async surveyId => {
 				};
 			} else {
 				responderMap[userId].answers_count += 1;
-				// Update response date if this answer is more recent
 				if (answer.created_at > responderMap[userId].response_date) {
 					responderMap[userId].response_date = answer.created_at;
 				}
 			}
 		});
 
-		// Convert to array and sort by most recent response
 		const responders = Object.values(responderMap).sort(
 			(a, b) => b.response_date - a.response_date
 		);
@@ -239,7 +236,6 @@ export const getSurveyResponders = async surveyId => {
 };
 export const getResponderAnswers = async (surveyId, responderId) => {
 	try {
-		// Get all answers from this responder for this survey's questions
 		const answers = await prisma.answer.findMany({
 			where: {
 				authorId: parseInt(responderId),
@@ -263,7 +259,6 @@ export const getResponderAnswers = async (surveyId, responderId) => {
 			}
 		});
 
-		// Format the response to match what the frontend expects
 		const formattedAnswers = answers.map(answer => ({
 			answer_Id: answer.answer_Id,
 			text: answer.text,

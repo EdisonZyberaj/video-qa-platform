@@ -5,7 +5,7 @@ import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 import axios from "axios";
 
-function SurveyResponders({ currentUser }) {
+function SurveyResponders() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const [survey, setSurvey] = useState(null);
@@ -17,7 +17,6 @@ function SurveyResponders({ currentUser }) {
 		() => {
 			const fetchSurveyResponders = async () => {
 				try {
-					// Check if token exists
 					const token = sessionStorage.getItem("token");
 					console.log("Token exists:", !!token);
 
@@ -43,7 +42,7 @@ function SurveyResponders({ currentUser }) {
 					setLoading(false);
 				} catch (error) {
 					console.error("Error fetching survey responders:", error);
-					// More detailed error logging
+
 					if (error.response) {
 						console.error("Response error data:", error.response.data);
 						console.error("Response error status:", error.response.status);
