@@ -18,6 +18,7 @@ import AnswerQuestion from "./Components/AnswerQuestion.jsx";
 import ResponderSurvey from "./Components/ResponderSurvey.jsx";
 import AddSurvey from "./Components/AddSurvey.jsx";
 import EditSurvey from "./Components/EditSurvey.jsx";
+import SurveyAnswerForm from "./Components/SurveyAnswerForm.jsx";
 
 function App() {
 	return (
@@ -44,6 +45,7 @@ function App() {
 					path="/survey/:id/question/:questionId/answer"
 					element={<AnswerQuestion />}
 				/>
+				<Route path="/survey/:id/answer-all" element={<SurveyAnswerForm />} />
 				<Route path="surveys/:id/update-survey" element={<EditSurvey />} />
 			</Routes>
 		</BrowserRouter>

@@ -106,7 +106,8 @@ function Register() {
 	};
 
 	return (
-		<div className="flex items-center justify-center min-h-screen bg-lightBlue px-4">
+		// Modified to make non-scrollable with padding top and bottom
+		<div className="flex items-center justify-center h-screen bg-lightBlue px-4 py-10 overflow-hidden">
 			<div className="flex bg-white rounded-lg shadow-lg overflow-hidden w-full max-w-4xl">
 				<div className="w-1/2 p-8">
 					<div className="flex flex-col items-center mb-6">

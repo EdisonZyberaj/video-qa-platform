@@ -7,6 +7,7 @@ import axios from "axios";
 
 function ResponderAnswers() {
 	const { id, responderId } = useParams();
+	console.log(id,responderId);
 	const navigate = useNavigate();
 	const [responder, setResponder] = useState(null);
 	const [answers, setAnswers] = useState([]);
@@ -14,84 +15,87 @@ function ResponderAnswers() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 
-	useEffect(
-		() => {
-			const fetchResponderAnswers = async () => {
-				try {
-					const token = sessionStorage.getItem("token");
+	useEffect(() => {
+		const fetchResponderAnswers = async () => {
+			try {
+				const token = sessionStorage.getItem("token");
 
-					if (!token) {
-						throw new Error("Authentication token not found");
+				if (!token) {
+					throw new Error("Authentication token not found");
+				}
+
+				const config = {
+					headers: {
+						Authorization: `Bearer ${token}`
 					}
+				};
 
-					const config = {
-						headers: {
-							Authorization: `Bearer ${token}`
-						}
-					};
+				console.log("Fetching data for survey:", id, "and responder:", responderId);
 
-					const responderResponse = await axios.post(
-						`http://localhost:5000/api/user/get-by-ids`,
-						{
-							userIds: [parseInt(responderId)]
-						},
+				const responderResponse = await axios.post(
+					`http://localhost:5000/api/user/get-by-ids`,
+					{
+						userIds: [parseInt(responderId)]
+					},
+					config
+				);
+
+				if (!responderResponse.data || responderResponse.data.length === 0) {
+					throw new Error("Responder not found");
+				}
+
+				const responderData = responderResponse.data[0];
+				console.log("Responder data:", responderData);
+
+				let answersData = [];
+				try {
+					console.log("Fetching answers from:", `/api/answers/survey/${id}/responder/${responderId}`);
+					const answersResponse = await axios.get(
+						`http://localhost:5000/api/answers/survey/${id}/responder/${responderId}`,
+						config
+					);
+					answersData = answersResponse.data;
+					console.log("Answers data:", answersData);
+				} catch (answersError) {
+					console.error("Error fetching answers:", answersError);
+				}
+
+				try {
+					console.log("Fetching video from:", `/api/answers/survey/${id}/video/${responderId}`);
+					const videoResponse = await axios.get(
+						`http://localhost:5000/api/answers/survey/${id}/video/${responderId}`,
 						config
 					);
 
-					if (!responderResponse.data || responderResponse.data.length === 0) {
-						throw new Error("Responder not found");
+					if (videoResponse.data) {
+						setVideoData(videoResponse.data);
+						console.log("Video data:", videoResponse.data);
 					}
-
-					const responderData = responderResponse.data[0];
-
-					let answersData = [];
-					try {
-						const answersResponse = await axios.get(
-							`http://localhost:5000/api/answers/survey/${id}/responder/${responderId}`,
-							config
-						);
-						answersData = answersResponse.data;
-					} catch (answersError) {
-						console.error("Error fetching answers:", answersError);
-					}
-
-					let videoData = null;
-					try {
-						const videoResponse = await axios.get(
-							`http://localhost:5000/api/videos/survey/${id}/responder/${responderId}`,
-							config
-						);
-
-						if (videoResponse.data) {
-							videoData = videoResponse.data;
-						}
-					} catch (videoError) {
-						console.log("No video found or error fetching video:", videoError);
-					}
-					const answerDates = answersData.map(
-						answer => new Date(answer.created_at)
-					);
-					const latestDate =
-						answerDates.length > 0 ? new Date(Math.max(...answerDates)) : null;
-
-					setResponder({
-						...responderData,
-						response_date: latestDate ? latestDate.toISOString() : null
-					});
-					setAnswers(answersData);
-					setVideoData(videoData);
-					setLoading(false);
-				} catch (error) {
-					console.error("Error fetching responder answers:", error);
-					setError(error.message || "Failed to load data");
-					setLoading(false);
+				} catch (videoError) {
+					console.log("No video found or error fetching video:", videoError.response?.status);
 				}
-			};
+				
+				const answerDates = answersData.map(
+					answer => new Date(answer.created_at)
+				);
+				const latestDate =
+					answerDates.length > 0 ? new Date(Math.max(...answerDates)) : null;
 
-			fetchResponderAnswers();
-		},
-		[id, responderId]
-	);
+				setResponder({
+					...responderData,
+					response_date: latestDate ? latestDate.toISOString() : null
+				});
+				setAnswers(answersData);
+				setLoading(false);
+			} catch (error) {
+				console.error("Error fetching responder answers:", error);
+				setError(error.message || "Failed to load data");
+				setLoading(false);
+			}
+		};
+
+		fetchResponderAnswers();
+	}, [id, responderId]);
 
 	const handleBackToResponders = () => {
 		navigate(`/survey/${id}/responders`);
@@ -110,6 +114,7 @@ function ResponderAnswers() {
 	};
 
 	const getCategoryDisplayName = category => {
+		if (!category) return "Uncategorized";
 		return category
 			.replace(/_/g, " ")
 			.toLowerCase()
@@ -225,47 +230,49 @@ function ResponderAnswers() {
 					Answers ({answers.length})
 				</h2>
 
-				{answers.length === 0
-					? <div className="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-10">
-							<p className="text-darkBlue/80">
-								No answers submitted by this responder yet.
-							</p>
-						</div>
-					: <div className="space-y-6 mb-10">
-							{answers.map(answer =>
-								<div
-									key={answer.answer_id}
-									className="bg-white rounded-xl shadow-md overflow-hidden">
-									<div className="border-b border-lightBlue/30 bg-lightBlue/20 px-6 py-4">
-										<div className="flex items-center justify-between">
-											<h3 className="font-medium text-darkBlue">
-												{answer.question.title}
-											</h3>
-											<span className="px-3 py-1 bg-lightBlue/30 text-darkBlue rounded-full text-xs font-medium">
-												{getCategoryDisplayName(answer.question.category)}
-											</span>
-										</div>
-									</div>
-									<div className="px-6 py-5">
-										<p className="text-darkBlue/80 whitespace-pre-line">
-											{answer.text}
-										</p>
-										<p className="text-xs text-softBlue mt-4">
-											Answered on {formatDate(answer.created_at)}
-										</p>
+				{answers.length === 0 ? (
+					<div className="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-10">
+						<p className="text-darkBlue/80">
+							No answers submitted by this responder yet.
+						</p>
+					</div>
+				) : (
+					<div className="space-y-6 mb-10">
+						{answers.map(answer => (
+							<div
+								key={answer.answer_id || `answer-${answer.questionId}`}
+								className="bg-white rounded-xl shadow-md overflow-hidden">
+								<div className="border-b border-lightBlue/30 bg-lightBlue/20 px-6 py-4">
+									<div className="flex items-center justify-between">
+										<h3 className="font-medium text-darkBlue">
+											{answer.question?.title || "Question"}
+										</h3>
+										<span className="px-3 py-1 bg-lightBlue/30 text-darkBlue rounded-full text-xs font-medium">
+											{getCategoryDisplayName(answer.question?.category)}
+										</span>
 									</div>
 								</div>
-							)}
-						</div>}
+								<div className="px-6 py-5">
+									<p className="text-darkBlue/80 whitespace-pre-line">
+										{answer.text}
+									</p>
+									<p className="text-xs text-softBlue mt-4">
+										Answered on {formatDate(answer.created_at)}
+									</p>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
 
-				{videoData &&
+				{videoData && (
 					<div className="mb-10">
 						<h2 className="text-2xl font-bold text-darkBlue mb-4">
 							Video Response
 						</h2>
 						<div className="bg-white rounded-xl shadow-md overflow-hidden">
-							<div className="aspect-w-16 aspect-h-9 bg-gray-900">
-								<div className="flex items-center justify-center h-64 text-white">
+							<div className="bg-gray-900 p-6">
+								<div className="flex items-center justify-center text-white">
 									<div className="text-center">
 										<svg
 											className="w-16 h-16 mx-auto mb-3"
@@ -289,14 +296,20 @@ function ResponderAnswers() {
 										<p className="mb-3">
 											Video response from {responder.name} {responder.last_name}
 										</p>
-										<button className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-2 px-6 rounded-md transition-colors duration-200">
-											Play Video
-										</button>
+										<a 
+											href={videoData.question_link} 
+											target="_blank" 
+											rel="noopener noreferrer"
+											className="bg-mediumBlue hover:bg-hoverBlue text-white font-medium py-2 px-6 rounded-md transition-colors duration-200 inline-block"
+										>
+											View Video
+										</a>
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>}
+					</div>
+				)}
 			</main>
 			<Footer />
 		</div>

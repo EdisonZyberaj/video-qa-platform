@@ -58,7 +58,7 @@ function Login() {
 
 				console.log("Token stored in sessionStorage:", token);
 
-				navigate("/surveys");
+				navigate("/userProfile");
 			} else {
 				setError("Login failed. No token received.");
 			}

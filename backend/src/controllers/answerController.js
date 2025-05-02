@@ -1,82 +1,325 @@
 import { PrismaClient } from "@prisma/client";
-import {
-	addAnswer,
-	getAnswersByQuestionId,
-	getAnswersBySurveyAndResponderId
-} from "../services/answerService.js";
+import { Readable } from "stream";
+import drive from "../config/googleDrive.js";
 
 const prisma = new PrismaClient();
 
 export const submitAnswer = async (req, res) => {
-	const { text, surveyId, questionId } = req.body;
-	const userId = req.user.userId;
+  try {
+    console.log("Received answer submission request:", { 
+      body: req.body,
+      file: req.file ? `File received: ${req.file.originalname}` : "No file received" 
+    });
+    
+    // Parse the answers array from JSON
+    let answers = [];
+    try {
+      answers = JSON.parse(req.body.answers || "[]");
+      if (!Array.isArray(answers)) {
+        answers = [answers]; // Convert to array if single object
+      }
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid answers format" });
+    }
 
-	try {
-		const user = await prisma.user.findUnique({
-			where: { user_id: userId }
-		});
+    if (answers.length === 0) {
+      return res.status(400).json({ error: "No answers provided" });
+    }
 
-		if (!user) {
-			return res.status(404).json({ error: "User not found" });
-		}
-		// nese na duhet qe vec roli responder te aksesoje kte endpoint
-		// if (user.role !== "RESPONDER") {
-		// 	return res
-		// 		.status(403)
-		// 		.json({ error: "Only responders can submit answers" });
-		// }
+    // Make sure user_id is accessed properly from req.user
+    const userId = req.user?.user_id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: "User ID is missing. Please log in again." });
+    }
 
-		const question = await prisma.question.findFirst({
-			where: {
-				question_id: parseInt(questionId),
-				surveyId: parseInt(surveyId)
-			}
-		});
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { user_id: parseInt(userId) }
+    });
 
-		if (!question) {
-			return res
-				.status(404)
-				.json({ error: "Question not found in this survey" });
-		}
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-		const answer = await addAnswer({
-			text,
-			authorId: userId,
-			surveyId: parseInt(surveyId),
-			questionId: parseInt(questionId)
-		});
+    // Use the surveyId from the first answer
+    const surveyId = answers[0].surveyId;
 
-		res.status(201).json({ message: "Answer submitted successfully", answer });
-	} catch (error) {
-		console.error("Error submitting answer:", error);
-		res.status(500).json({ error: error.message || "Failed to submit answer" });
-	}
+    // Handle video upload if present
+    let videoUploadResult = null;
+    
+    if (req.file) {
+      try {
+        // Check if user already has a video for this survey
+        const existingVideo = await prisma.survey_Video.findFirst({
+          where: {
+            surveyId: parseInt(surveyId),
+            uploaderId: parseInt(userId)
+          }
+        });
+
+        if (!existingVideo) {
+          console.log("Processing video upload...");
+          videoUploadResult = await uploadVideoAnswer(req.file, surveyId, userId);
+          console.log("Video upload successful:", videoUploadResult);
+        } else {
+          console.log("User already has a video for this survey, skipping video upload");
+        }
+      } catch (videoError) {
+        console.error("Error handling video:", videoError);
+      }
+    }
+
+    // Process each answer
+    const processedAnswers = [];
+    for (const answer of answers) {
+      const { text, questionId } = answer;
+      
+      // Validate required fields
+      if (!text || !surveyId || !questionId) {
+        return res.status(400).json({ 
+          error: "Missing required fields in answer: text, surveyId, or questionId",
+          providedAnswer: answer 
+        });
+      }
+
+      // Verify question exists
+      const question = await prisma.question.findFirst({
+        where: {
+          question_id: parseInt(questionId),
+          surveyId: parseInt(surveyId)
+        }
+      });
+
+      if (!question) {
+        return res.status(404).json({ 
+          error: `Question ${questionId} not found in survey ${surveyId}` 
+        });
+      }
+
+      // Check for existing answer and update or create
+      const existingAnswer = await prisma.answer.findFirst({
+        where: {
+          questionId: parseInt(questionId),
+          authorId: parseInt(userId),
+          surveyId: parseInt(surveyId)
+        }
+      });
+
+      let processedAnswer;
+      
+      if (existingAnswer) {
+        console.log("Updating existing answer for question:", questionId);
+        processedAnswer = await prisma.answer.update({
+          where: {
+            answer_Id: existingAnswer.answer_Id
+          },
+          data: {
+            text,
+            created_at: new Date()
+          }
+        });
+      } else {
+        console.log("Creating new answer for question:", questionId);
+        processedAnswer = await prisma.answer.create({
+          data: {
+            text,
+            created_at: new Date(),
+            authorId: parseInt(userId),
+            surveyId: parseInt(surveyId),
+            questionId: parseInt(questionId)
+          }
+        });
+      }
+      
+      processedAnswers.push(processedAnswer);
+    }
+
+    console.log("Answers processed successfully");
+    return res.status(200).json({ 
+      message: "Answers submitted successfully", 
+      answers: processedAnswers,
+      videoAdded: videoUploadResult !== null
+    });
+  } catch (error) {
+    console.error("Error submitting answer:", error);
+    res.status(500).json({ error: error.message || "Failed to submit answer" });
+  }
 };
 
 export const getQuestionAnswers = async (req, res) => {
-	const { questionId } = req.params;
+  const { questionId } = req.params;
 
-	try {
-		const answers = await getAnswersByQuestionId(questionId);
-		res.status(200).json(answers);
-	} catch (error) {
-		console.error("Error fetching answers:", error);
-		res.status(500).json({ error: error.message || "Failed to fetch answers" });
-	}
+  try {
+    const answers = await prisma.answer.findMany({
+      where: {
+        questionId: parseInt(questionId)
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+            last_name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        created_at: "desc"
+      }
+    });
+    res.status(200).json(answers);
+  } catch (error) {
+    console.error("Error fetching answers:", error);
+    res.status(500).json({ error: error.message || "Failed to fetch answers" });
+  }
 };
-export const getResponderAnswers = async (req, res) => {
-	const { surveyId, responderId } = req.params;
 
-	try {
-		const answers = await getAnswersBySurveyAndResponderId(
-			surveyId,
-			responderId
-		);
-		res.status(200).json(answers);
-	} catch (error) {
-		console.error("Error fetching responder answers:", error);
-		res
-			.status(500)
-			.json({ error: error.message || "Failed to fetch responder answers" });
-	}
+export const getResponderAnswers = async (req, res) => {
+  const { surveyId, responderId } = req.params;
+
+  try {
+    const answers = await prisma.answer.findMany({
+      where: {
+        surveyId: parseInt(surveyId),
+        authorId: parseInt(responderId)
+      },
+      include: {
+        question: true
+      },
+      orderBy: {
+        created_at: "desc"
+      }
+    });
+    res.status(200).json(answers);
+  } catch (error) {
+    console.error("Error fetching responder answers:", error);
+    res.status(500).json({ error: error.message || "Failed to fetch responder answers" });
+  }
+};
+
+export const getVideoAnswer = async (req, res) => {
+  const { surveyId, responderId } = req.params;
+
+  try {
+    console.log(`Fetching video for survey:${surveyId} and responder:${responderId}`);
+    
+    // Make sure the IDs are treated as numbers
+    const numericSurveyId = parseInt(surveyId);
+    const numericResponderId = parseInt(responderId);
+    
+    if (isNaN(numericSurveyId) || isNaN(numericResponderId)) {
+      return res.status(400).json({ error: "Invalid surveyId or responderId" });
+    }
+    
+    // Find the video in the database
+    const videoAnswer = await prisma.survey_Video.findFirst({
+      where: {
+        surveyId: numericSurveyId,
+        uploaderId: numericResponderId
+      }
+    });
+    
+    console.log("Video search result:", videoAnswer ? "Found" : "Not found");
+    
+    return res.status(200).json(videoAnswer);
+  } catch (error) {
+    console.error("Error fetching video answer:", error);
+    res.status(500).json({ error: error.message || "Failed to fetch video answer" });
+  }
+};
+
+// Video upload helper function
+const uploadVideoAnswer = async (videoFile, surveyId, userId) => {
+  try {
+    console.log(
+      `Attempting to upload video: ${videoFile.originalname} for survey ${surveyId} by user ${userId}`
+    );
+
+    // Validate inputs
+    if (!videoFile || !videoFile.buffer) {
+      throw new Error("Invalid video file");
+    }
+
+    if (!surveyId || !userId) {
+      throw new Error("Missing surveyId or userId");
+    }
+
+    // Get folder ID from environment or use fallback
+    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || "1NZ9mYYUALmOsgvB6TFJrS6iiTR4FXuWM";
+    
+    console.log("Using Google Drive folder ID:", folderId);
+    console.log("Creating readable stream from buffer...");
+    
+    // Create a readable stream from the buffer
+    const stream = Readable.from(videoFile.buffer);
+
+    console.log("Uploading file to Google Drive...");
+    // Upload the file to Google Drive
+    const response = await drive.files.create({
+      requestBody: {
+        name: videoFile.originalname,
+        parents: [folderId],
+        mimeType: videoFile.mimetype
+      },
+      media: {
+        mimeType: videoFile.mimetype,
+        body: stream
+      },
+      fields: "id, name, webViewLink, webContentLink"
+    });
+
+    console.log("File uploaded successfully. Setting permissions...");
+    // Make the file publicly accessible
+    await drive.permissions.create({
+      fileId: response.data.id,
+      requestBody: {
+        role: "reader",
+        type: "anyone"
+      }
+    });
+
+    console.log("Permissions set. Getting file URL...");
+    // Get the public URL
+    const file = await drive.files.get({
+      fileId: response.data.id,
+      fields: "webViewLink, webContentLink"
+    });
+
+    const videoUrl = file.data.webViewLink || file.data.webContentLink;
+
+    if (!videoUrl) {
+      throw new Error("No video URL received from Google Drive");
+    }
+
+    console.log("Video URL obtained:", videoUrl);
+    console.log("Saving video reference in database...");
+
+    // Save the video reference in the database
+    const videoAnswer = await prisma.survey_Video.create({
+      data: {
+        question_link: videoUrl,
+        surveyId: parseInt(surveyId),
+        uploaderId: parseInt(userId)
+      }
+    });
+
+    console.log("Video reference saved successfully:", videoAnswer);
+    return videoAnswer;
+  } catch (error) {
+    console.error("Error uploading video answer:", error);
+
+    // Add detailed error information
+    if (error.message?.includes("invalid_client")) {
+      console.error(
+        "Authentication error with Google Drive API. Please check your credentials."
+      );
+    } else if (error.message?.includes("invalid_grant")) {
+      console.error(
+        "Your refresh token may have expired. Please generate a new refresh token."
+      );
+    }
+
+    throw error;
+  }
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import { useNavigate } from "react-router-dom";
 
 function UserProfile() {
 	const [user, setUser] = useState(null);
@@ -9,6 +10,7 @@ function UserProfile() {
 	const [successMessage, setSuccessMessage] = useState("");
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
+	const navigate = useNavigate();
 
 	const [passwordData, setPasswordData] = useState({
 		currentPassword: "",
@@ -110,6 +112,12 @@ function UserProfile() {
 		}));
 	};
 
+	const handleLogout = () => {
+		sessionStorage.removeItem("token");
+		sessionStorage.removeItem("user_id");
+		navigate("/login");
+	};
+
 	const handleChangePassword = async e => {
 		e.preventDefault();
 		setPasswordError(null);
@@ -177,7 +185,7 @@ function UserProfile() {
 
 	if (error) {
 		return (
-			<div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white">
+			<div className="flex flex-col min-h-screen bg-gradient-to-b from-lightBlue to-white">
 				<Navbar />
 				<main className="container px-4 py-8 flex-grow">
 					<div className="text-center text-red-500">
@@ -191,11 +199,11 @@ function UserProfile() {
 
 	if (!user || loading) {
 		return (
-			<div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white">
+			<div className="flex flex-col min-h-screen bg-gradient-to-b from-lightBlue to-white">
 				<Navbar />
 				<main className="container px-4 py-8 flex-grow">
 					<div className="text-center">
-						<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto" />
+						<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-mediumBlue mx-auto" />
 						<p className="mt-4 text-gray-600">Loading...</p>
 					</div>
 				</main>
@@ -205,14 +213,14 @@ function UserProfile() {
 	}
 
 	return (
-		<div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-50 to-white ">
+		<div className="flex flex-col min-h-screen bg-gradient-to-b from-lightBlue to-white">
 			<Navbar />
 
-			<main className=" mx-auto container px-4 py-8 flex-grow">
+			<main className="mx-auto container px-4 py-8 flex-grow">
 				<div className="mx-auto max-w-4xl">
-					<div className="mx-auto bg-white rounded-lg shadow-md p-6 mb-6 border-t-4 border-blue-600">
+					<div className="mx-auto bg-white rounded-lg shadow-md p-6 mb-6 border-t-4 border-mediumBlue">
 						<div className="flex items-center justify-between mb-6">
-							<h1 className="text-3xl font-bold text-gray-800">Your Profile</h1>
+							<h1 className="text-3xl font-bold text-darkBlue">Your Profile</h1>
 							{successMessage &&
 								<div className="bg-green-100 text-green-700 px-4 py-2 rounded-md">
 									{successMessage}
@@ -220,16 +228,16 @@ function UserProfile() {
 						</div>
 
 						<div className="flex flex-col md:flex-row items-start md:items-center gap-4 py-2">
-							<div className="flex items-center justify-center w-20 h-20 rounded-full bg-blue-600 text-white text-xl font-bold">
+							<div className="flex items-center justify-center w-20 h-20 rounded-full bg-mediumBlue text-white text-xl font-bold">
 								{user.name.charAt(0)}
 								{user.last_name.charAt(0)}
 							</div>
 							<div className="flex-grow">
-								<h2 className="text-2xl font-bold text-gray-800">
+								<h2 className="text-2xl font-bold text-darkBlue">
 									{user.name} {user.last_name}
 								</h2>
 								<div className="flex flex-wrap items-center gap-3 mt-2">
-									<span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 font-medium rounded-full text-sm">
+									<span className="inline-block px-3 py-1 bg-lightBlue text-darkBlue font-medium rounded-full text-sm">
 										{user.role}
 									</span>
 									<span className="text-gray-600">
@@ -246,22 +254,22 @@ function UserProfile() {
 					<div className="flex border-b border-gray-200 mb-6">
 						<button
 							className={`px-4 py-2 font-medium ${activeTab === "details"
-								? "text-blue-600 border-b-2 border-blue-600"
-								: "text-gray-600 hover:text-blue-600"}`}
+								? "text-mediumBlue border-b-2 border-mediumBlue"
+								: "text-gray-600 hover:text-mediumBlue"}`}
 							onClick={() => setActiveTab("details")}>
 							Profile Details
 						</button>
 						<button
 							className={`px-4 py-2 font-medium ${activeTab === "activity"
-								? "text-blue-600 border-b-2 border-blue-600"
-								: "text-gray-600 hover:text-blue-600"}`}
+								? "text-mediumBlue border-b-2 border-mediumBlue"
+								: "text-gray-600 hover:text-mediumBlue"}`}
 							onClick={() => setActiveTab("activity")}>
 							Activity
 						</button>
 						<button
 							className={`px-4 py-2 font-medium ${activeTab === "security"
-								? "text-blue-600 border-b-2 border-blue-600"
-								: "text-gray-600 hover:text-blue-600"}`}
+								? "text-mediumBlue border-b-2 border-mediumBlue"
+								: "text-gray-600 hover:text-mediumBlue"}`}
 							onClick={() => setActiveTab("security")}>
 							Security
 						</button>
@@ -269,7 +277,7 @@ function UserProfile() {
 
 					{activeTab === "details" &&
 						<div className="bg-white rounded-lg shadow-md p-6 mb-6">
-							<h3 className="text-xl font-semibold mb-4 text-gray-800">
+							<h3 className="text-xl font-semibold mb-4 text-darkBlue">
 								Edit Profile
 							</h3>
 							<form onSubmit={handleUpdateProfile}>
@@ -282,7 +290,7 @@ function UserProfile() {
 											type="text"
 											value={user.name}
 											onChange={e => setUser({ ...user, name: e.target.value })}
-											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue focus:border-mediumBlue transition"
 											required
 										/>
 									</div>
@@ -295,7 +303,7 @@ function UserProfile() {
 											value={user.last_name}
 											onChange={e =>
 												setUser({ ...user, last_name: e.target.value })}
-											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue focus:border-mediumBlue transition"
 											required
 										/>
 									</div>
@@ -308,7 +316,7 @@ function UserProfile() {
 											value={user.email}
 											onChange={e =>
 												setUser({ ...user, email: e.target.value })}
-											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue focus:border-mediumBlue transition"
 											required
 										/>
 									</div>
@@ -317,7 +325,7 @@ function UserProfile() {
 									<button
 										type="submit"
 										disabled={loading}
-										className={`px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition ${loading
+										className={`px-4 py-2 bg-mediumBlue text-white font-medium rounded-lg hover:bg-hoverBlue transition ${loading
 											? "opacity-70 cursor-not-allowed"
 											: ""}`}>
 										{loading ? "Saving..." : "Save Changes"}
@@ -334,70 +342,55 @@ function UserProfile() {
 
 					{activeTab === "activity" &&
 						<div className="bg-white rounded-lg shadow-md p-6 mb-6">
-							<h3 className="text-xl font-semibold mb-4 text-gray-800">
+							<h3 className="text-xl font-semibold mb-4 text-darkBlue">
 								Activity Summary
 							</h3>
 							<div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-								<div className="bg-blue-50 rounded-lg p-4 text-center hover:shadow-md transition">
-									<div className="text-3xl font-bold text-blue-600 mb-1">
+								<div className="bg-lightBlue rounded-lg p-4 text-center hover:shadow-md transition">
+									<div className="text-3xl font-bold text-mediumBlue mb-1">
 										{user.surveysCount || 0}
 									</div>
-									<div className="text-sm text-gray-600">Surveys</div>
+									<div className="text-sm text-darkBlue">Surveys</div>
 								</div>
-								<div className="bg-blue-50 rounded-lg p-4 text-center hover:shadow-md transition">
-									<div className="text-3xl font-bold text-blue-600 mb-1">
+								<div className="bg-lightBlue rounded-lg p-4 text-center hover:shadow-md transition">
+									<div className="text-3xl font-bold text-mediumBlue mb-1">
 										{user.questionsCount || 0}
 									</div>
-									<div className="text-sm text-gray-600">Questions</div>
+									<div className="text-sm text-darkBlue">Questions</div>
 								</div>
-								<div className="bg-blue-50 rounded-lg p-4 text-center hover:shadow-md transition">
-									<div className="text-3xl font-bold text-blue-600 mb-1">
+								<div className="bg-lightBlue rounded-lg p-4 text-center hover:shadow-md transition">
+									<div className="text-3xl font-bold text-mediumBlue mb-1">
 										{user.answersCount || 0}
 									</div>
-									<div className="text-sm text-gray-600">Answers</div>
+									<div className="text-sm text-darkBlue">Answers</div>
 								</div>
-								<div className="bg-blue-50 rounded-lg p-4 text-center hover:shadow-md transition">
-									<div className="text-3xl font-bold text-blue-600 mb-1">
+								<div className="bg-lightBlue rounded-lg p-4 text-center hover:shadow-md transition">
+									<div className="text-3xl font-bold text-mediumBlue mb-1">
 										{user.surveyVideosCount || 0}
 									</div>
-									<div className="text-sm text-gray-600">Survey Videos</div>
+									<div className="text-sm text-darkBlue">Survey Videos</div>
 								</div>
 							</div>
+							<button
+								onClick={handleLogout}
+								className="bg-white border border-mediumBlue text-mediumBlue hover:bg-lightBlue py-2 px-6 rounded-lg transition-colors duration-300">
+								Log Out
+							</button>
 
-							<h4 className="text-lg font-semibold mb-3 text-gray-800">
+							<h4 className="text-lg font-semibold mb-3 text-darkBlue mt-6">
 								Recent Activity
 							</h4>
-							{user.recentActivity && user.recentActivity.length > 0
-								? <div className="space-y-3">
-										{user.recentActivity.map((activity, index) =>
-											<div
-												key={index}
-												className="p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-												<p className="text-gray-800">
-													{activity.description}
-												</p>
-												<p className="text-xs text-gray-500 mt-1">
-													{formatDate(activity.date)}
-												</p>
-											</div>
-										)}
-									</div>
-								: <div className="p-3 bg-gray-50 rounded-lg text-center">
-										<p className="text-gray-600">
-											No recent activity to display
-										</p>
-									</div>}
 						</div>}
 
 					{activeTab === "security" &&
 						<div className="bg-white rounded-lg shadow-md p-6 mb-6">
-							<h3 className="text-xl font-semibold mb-4 text-gray-800">
+							<h3 className="text-xl font-semibold mb-4 text-darkBlue">
 								Security Settings
 							</h3>
 
 							{/* Password Change Form */}
 							<div className="border border-gray-200 rounded-lg p-4 mb-6">
-								<h4 className="font-medium text-gray-800 mb-4">
+								<h4 className="font-medium text-darkBlue mb-4">
 									Change Password
 								</h4>
 
@@ -421,7 +414,7 @@ function UserProfile() {
 											name="currentPassword"
 											value={passwordData.currentPassword}
 											onChange={handlePasswordChange}
-											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue focus:border-mediumBlue transition"
 											required
 										/>
 									</div>
@@ -435,7 +428,7 @@ function UserProfile() {
 											name="newPassword"
 											value={passwordData.newPassword}
 											onChange={handlePasswordChange}
-											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue focus:border-mediumBlue transition"
 											required
 											minLength="6"
 										/>
@@ -450,7 +443,7 @@ function UserProfile() {
 											name="confirmPassword"
 											value={passwordData.confirmPassword}
 											onChange={handlePasswordChange}
-											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mediumBlue focus:border-mediumBlue transition"
 											required
 											minLength="6"
 										/>
@@ -459,52 +452,12 @@ function UserProfile() {
 									<button
 										type="submit"
 										disabled={loading}
-										className={`px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition ${loading
+										className={`px-4 py-2 bg-mediumBlue text-white font-medium rounded-lg hover:bg-hoverBlue transition ${loading
 											? "opacity-70 cursor-not-allowed"
 											: ""}`}>
 										{loading ? "Updating..." : "Update Password"}
 									</button>
 								</form>
-							</div>
-
-							{/* Additional Security Options (can be added later) */}
-							<div className="border border-gray-200 rounded-lg p-4">
-								<h4 className="font-medium text-gray-800 mb-2">
-									Account Security
-								</h4>
-								<p className="text-gray-600 text-sm mb-4">
-									Manage your account security settings
-								</p>
-
-								<div className="flex items-center justify-between py-2 border-b border-gray-100">
-									<div>
-										<p className="font-medium text-gray-700">
-											Two-Factor Authentication
-										</p>
-										<p className="text-sm text-gray-500">
-											Add an extra layer of security to your account
-										</p>
-									</div>
-									<button
-										className="px-3 py-1 text-sm border border-blue-500 text-blue-500 rounded hover:bg-blue-50 transition"
-										disabled>
-										Coming Soon
-									</button>
-								</div>
-
-								<div className="flex items-center justify-between py-2">
-									<div>
-										<p className="font-medium text-gray-700">Login History</p>
-										<p className="text-sm text-gray-500">
-											View your recent login activity
-										</p>
-									</div>
-									<button
-										className="px-3 py-1 text-sm border border-blue-500 text-blue-500 rounded hover:bg-blue-50 transition"
-										disabled>
-										Coming Soon
-									</button>
-								</div>
 							</div>
 						</div>}
 				</div>
