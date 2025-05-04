@@ -58,7 +58,11 @@ function Login() {
 
 				console.log("Token stored in sessionStorage:", token);
 
-				navigate("/userProfile");
+				if (response.data.user.role == "ADMIN") {
+					navigate("/admin");
+				} else {
+					navigate("/userProfile");
+				}
 			} else {
 				setError("Login failed. No token received.");
 			}

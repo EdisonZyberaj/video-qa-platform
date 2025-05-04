@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Components/Login.jsx";
 import Register from "./Components/Register.jsx";
 import Questions from "./Components/Questions.jsx";
-import VideoRecorder from "./Components/VideoRecorder.jsx";
 import UserProfile from "./Components/UserProfile.jsx";
 import Surveys from "./Components/Surveys.jsx";
 import ResponderSurveys from "./Components/ResponderSurveys.jsx";
@@ -20,6 +19,12 @@ import AddSurvey from "./Components/AddSurvey.jsx";
 import EditSurvey from "./Components/EditSurvey.jsx";
 import SurveyAnswerForm from "./Components/SurveyAnswerForm.jsx";
 
+// Admin Dashboard Components
+import AdminDashboard from "./Components/AdminDashboard.jsx";
+import AdminUsers from "./Components/AdminUsers.jsx";
+import AdminSurveys from "./Components/AdminSurveys.jsx";
+import AdminRouteGuard from "./Components/AdminRouteGuard.jsx";
+
 function App() {
 	return (
 		<BrowserRouter>
@@ -28,7 +33,6 @@ function App() {
 				<Route path="/questions" element={<Questions />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/register" element={<Register />} />
-				<Route path="/record" element={<VideoRecorder />} />
 				<Route path="/userProfile" element={<UserProfile />} />
 				<Route path="/surveys" element={<Surveys />} />
 				<Route path="/add-survey" element={<AddSurvey />} />
@@ -47,6 +51,13 @@ function App() {
 				/>
 				<Route path="/survey/:id/answer-all" element={<SurveyAnswerForm />} />
 				<Route path="surveys/:id/update-survey" element={<EditSurvey />} />
+
+				{/* Admin Routes with Route Guard */}
+				<Route element={<AdminRouteGuard />}>
+					<Route path="/admin" element={<AdminDashboard />} />
+					<Route path="/admin/users" element={<AdminUsers />} />
+					<Route path="/admin/surveys" element={<AdminSurveys />} />
+				</Route>
 			</Routes>
 		</BrowserRouter>
 	);
