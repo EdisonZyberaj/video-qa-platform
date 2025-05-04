@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 import axios from "axios";
+import { Play, ArrowLeft } from 'lucide-react';
 
 function ResponderAnswers() {
 	const { id, responderId } = useParams();
@@ -189,19 +190,7 @@ function ResponderAnswers() {
 					<button
 						onClick={handleBackToResponders}
 						className="inline-flex items-center text-mediumBlue hover:text-darkBlue mb-4 transition-colors duration-200">
-						<svg
-							className="w-5 h-5 mr-1"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth="2"
-								d="M10 19l-7-7m0 0l7-7m-7 7h18"
-							/>
-						</svg>
+						<ArrowLeft className="w-5 h-5 mr-1" />
 						Back to All Responders
 					</button>
 				</div>
@@ -273,25 +262,7 @@ function ResponderAnswers() {
 							<div className="bg-gray-900 p-6">
 								<div className="flex items-center justify-center text-white">
 									<div className="text-center">
-										<svg
-											className="w-16 h-16 mx-auto mb-3"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-											xmlns="http://www.w3.org/2000/svg">
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth="2"
-												d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-											/>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth="2"
-												d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-											/>
-										</svg>
+										<Play className="w-7 h-7 mx-auto mb-3" />
 										<p className="mb-3">
 											Video response from {responder.name} {responder.last_name}
 										</p>

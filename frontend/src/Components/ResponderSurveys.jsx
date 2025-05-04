@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { Search, X } from "lucide-react";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 
@@ -9,6 +9,7 @@ function ResponderSurveys() {
 	const [surveys, setSurveys] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [authors, setAuthors] = useState({});
+	const [searchTerm, setSearchTerm] = useState("");
 
 	useEffect(() => {
 		const fetchSurveys = async () => {
@@ -66,11 +67,23 @@ function ResponderSurveys() {
 		fetchSurveys();
 	}, []);
 
+	// Filter surveys based on search term
+	const filteredSurveys = surveys.filter(survey => {
+		const searchLower = searchTerm.toLowerCase();
+		return (
+			survey.title.toLowerCase().includes(searchLower) ||
+			survey.description.toLowerCase().includes(searchLower) ||
+			(authors[survey.authorId] || `Author ${survey.authorId}`)
+				.toLowerCase()
+				.includes(searchLower)
+		);
+	});
+
 	return (
 		<div className="flex flex-col min-h-screen">
 			<Navbar />
 
-			<main className="container mx-auto flex-grow py-12 px-6">
+			<main className="container mx-auto flex-grow py-12 px-10">
 				<div className="mb-10 text-center">
 					<h2 className="text-3xl font-bold text-darkBlue mb-3">
 						Available Surveys
@@ -82,31 +95,55 @@ function ResponderSurveys() {
 					</p>
 				</div>
 
+				<div className="mb-8 max-w-md mx-auto">
+					<div className="relative">
+						<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+							<Search className="h-5 w-5 text-gray-400" />
+						</div>
+						<input
+							type="text"
+							placeholder="Search by title, description or author..."
+							value={searchTerm}
+							onChange={e => setSearchTerm(e.target.value)}
+							className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-mediumBlue focus:border-mediumBlue"
+						/>
+						{searchTerm &&
+							<button
+								onClick={() => setSearchTerm("")}
+								className="absolute inset-y-0 right-0 pr-3 flex items-center">
+								<X className="h-4 w-4 text-gray-400" />
+							</button>}
+					</div>
+				</div>
+
 				{loading
 					? <div className="flex justify-center items-center h-64">
 							<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mediumBlue" />
 						</div>
 					: <div>
-							{surveys.length > 0
+							{filteredSurveys.length > 0
 								? <div className="grid gap-6 md:grid-cols-2">
-										{surveys.map(survey =>
+										{filteredSurveys.map(survey =>
 											<Link
 												key={survey.survey_id}
 												to={`/responder-survey/${survey.survey_id}`}
-												className="block bg-white rounded-lg shadow-lg hover:shadow-xl overflow-hidden border border-lightBlue">
+												className="block bg-white rounded-xl shadow-lg hover:shadow-xl overflow-hidden border border-lightBlue transition-all duration-300">
 												<div className="bg-mediumBlue h-3" />
 												<div className="p-8">
 													<span className="text-xl font-semibold text-darkBlue">
 														{survey.title}
 													</span>
-													<p className="text-sm text-softBlue mt-2">
+													<p className="text-gray-600 mt-2 mb-2 line-clamp-2">
+														{survey.description}
+													</p>
+													<p className="text-sm text-softBlue">
 														Created by:{" "}
 														<span className="font-medium">
 															{authors[survey.authorId] ||
 																`Author ${survey.authorId}`}
 														</span>
 													</p>
-													<div className="flex justify-between items-center mt-6">
+													<div className="flex justify-between items-center mt-4">
 														<span className="text-base text-softBlue">
 															{survey.questions.length} question{survey.questions.length !== 1 ? "s" : ""}
 														</span>
@@ -119,9 +156,13 @@ function ResponderSurveys() {
 										)}
 									</div>
 								: <div className="text-center py-16 bg-white rounded-xl shadow">
-										<p className="text-darkBlue/70">
-											No surveys available at the moment.
-										</p>
+										{searchTerm
+											? <p className="text-darkBlue/70">
+													No surveys matching "{searchTerm}" found.
+												</p>
+											: <p className="text-darkBlue/70">
+													No surveys available at the moment.
+												</p>}
 									</div>}
 						</div>}
 			</main>
@@ -130,13 +171,5 @@ function ResponderSurveys() {
 		</div>
 	);
 }
-
-ResponderSurveys.propTypes = {
-	currentUser: PropTypes.shape({
-		id: PropTypes.string,
-		name: PropTypes.string,
-		email: PropTypes.string
-	})
-};
 
 export default ResponderSurveys;

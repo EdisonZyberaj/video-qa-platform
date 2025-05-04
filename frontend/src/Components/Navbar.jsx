@@ -56,7 +56,6 @@ function Navbar() {
 					</Link>
 				</div>
 
-				{/* Desktop Navigation */}
 				<div className="hidden md:flex space-x-6">
 					{user &&
 						user.role === "ASKER" &&
@@ -75,14 +74,11 @@ function Navbar() {
 				<div className="hidden md:flex items-center space-x-4 ml-6">
 					{user &&
 						<div className="flex items-center space-x-4">
-							{/* User Profile Link */}
 							<div>
 								<Link to="/userProfile" className="hover:text-gray-400">
 									<User size={20} />
 								</Link>
 							</div>
-
-							{/* Add Survey Button - only for askers */}
 							{user.role === "ASKER" &&
 								<div>
 									<Link
@@ -92,8 +88,6 @@ function Navbar() {
 										<span>Add Survey</span>
 									</Link>
 								</div>}
-
-							{/* Logout Button */}
 							<div>
 								<button
 									onClick={handleLogout}
@@ -114,7 +108,6 @@ function Navbar() {
 						</div>}
 				</div>
 
-				{/* Mobile Menu Button */}
 				<div className="md:hidden">
 					<button onClick={() => setIsOpen(!isOpen)}>
 						{isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -122,7 +115,6 @@ function Navbar() {
 				</div>
 			</div>
 
-			{/* Mobile Navigation */}
 			{isOpen &&
 				<div className="md:hidden flex flex-col items-center space-y-4 mt-4">
 					{user &&

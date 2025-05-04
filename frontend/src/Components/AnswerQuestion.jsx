@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "./Navbar.jsx";
@@ -12,20 +12,6 @@ function AnswerQuestion() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [hasExistingVideo, setHasExistingVideo] = useState(false);
-  
-  // Video recording state
-  const [recording, setRecording] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [videoBlob, setVideoBlob] = useState(null);
-  const [videoURL, setVideoURL] = useState(null);
-  const [timer, setTimer] = useState(0);
-  
-  // Refs for video recording
-  const webcamRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const streamRef = useRef(null);
-  const chunksRef = useRef([]);
 
   useEffect(() => {
     const fetchQuestionDetails = async () => {
@@ -58,23 +44,6 @@ function AnswerQuestion() {
           setError("Question not found");
         } else {
           setQuestionData(question);
-        }
-        
-        // Check if user already has a video for this survey
-        try {
-          const videoResponse = await axios.get(
-            `http://localhost:5000/api/answers/survey/${surveyId}/video/${userId}`,
-            config
-          );
-          
-          if (videoResponse.data) {
-            setHasExistingVideo(true);
-          }
-        } catch (videoErr) {
-          // 404 means no video found which is expected
-          if (videoErr.response?.status !== 404) {
-            console.error("Error checking for video:", videoErr);
-          }
         }
         
         // Check if this question has already been answered
@@ -113,127 +82,11 @@ function AnswerQuestion() {
     fetchQuestionDetails();
   }, [surveyId, questionId, navigate]);
 
-  // Timer effect for recording
-  useEffect(() => {
-    let interval = null;
-
-    if (recording && !paused) {
-      interval = setInterval(() => {
-        setTimer(t => t + 1);
-      }, 1000);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [recording, paused]);
-
-  const formatTime = seconds => {
-    const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
-    const secs = (seconds % 60).toString().padStart(2, "0");
-    return `${mins}:${secs}`;
-  };
-
-  // Video recording functions
-  const startRecording = async () => {
-    try {
-      setVideoURL(null);
-      chunksRef.current = [];
-      setTimer(0);
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
-
-      streamRef.current = stream;
-      webcamRef.current.srcObject = stream;
-
-      let recorder;
-      try {
-        recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-      } catch (e) {
-        console.error("WebM not supported, falling back to default format", e);
-        recorder = new MediaRecorder(stream);
-      }
-
-      mediaRecorderRef.current = recorder;
-
-      recorder.ondataavailable = event => {
-        if (event.data && event.data.size > 0) {
-          chunksRef.current.push(event.data);
-        }
-      };
-
-      recorder.start(1000);
-      setRecording(true);
-      setPaused(false);
-    } catch (error) {
-      console.error("Failed to start recording:", error);
-      alert("Could not access camera. Please check permissions.");
-    }
-  };
-
-  const stopRecording = () => {
-    const mediaRecorder = mediaRecorderRef.current;
-
-    if (!mediaRecorder || mediaRecorder.state === "inactive") {
-      return;
-    }
-
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
-      setVideoBlob(blob);
-      const url = URL.createObjectURL(blob);
-      setVideoURL(url);
-
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-      
-      webcamRef.current.srcObject = null;
-    };
-
-    mediaRecorder.stop();
-    setRecording(false);
-    setPaused(false);
-  };
-
-  const pauseRecording = () => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state === "recording"
-    ) {
-      mediaRecorderRef.current.pause();
-      setPaused(true);
-    }
-  };
-
-  const resumeRecording = () => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state === "paused"
-    ) {
-      mediaRecorderRef.current.resume();
-      setPaused(false);
-    }
-  };
-
-  const clearVideo = () => {
-    if (videoURL) {
-      URL.revokeObjectURL(videoURL);
-    }
-    setVideoURL(null);
-    setVideoBlob(null);
-    chunksRef.current = [];
-    setTimer(0);
-  };
-
   const handleSubmit = async () => {
     try {
-      // Allow empty answers if video is provided
-      if (!answer.trim() && !videoBlob) {
-        setError("Please provide either a text answer or a video response");
+      // Don't allow empty answers
+      if (!answer.trim()) {
+        setError("Please provide an answer before submitting");
         return;
       }
       
@@ -253,7 +106,6 @@ function AnswerQuestion() {
         return;
       }
 
-      // Important: Don't set Content-Type manually - let axios set it correctly for multipart/form-data
       const config = {
         headers: {
           Authorization: `Bearer ${token}`
@@ -263,7 +115,7 @@ function AnswerQuestion() {
       // Format answer in the expected format
       const formattedAnswers = [{
         questionId: parseInt(questionId),
-        text: answer.trim() || "Video response provided", // Provide default text if empty
+        text: answer.trim(),
         surveyId: parseInt(surveyId),
         authorId: parseInt(userId)
       }];
@@ -271,27 +123,6 @@ function AnswerQuestion() {
       // Create form data to handle the submission
       const formData = new FormData();
       formData.append("answers", JSON.stringify(formattedAnswers));
-
-      // Append video if present and no existing video
-      if (videoBlob && !hasExistingVideo) {
-        console.log("Appending video to form data, size:", videoBlob.size);
-        // Create a File object from the Blob with a unique name
-        const videoFile = new File(
-          [videoBlob], 
-          `survey_${surveyId}_user_${userId}_${Date.now()}.webm`, 
-          { type: "video/webm" }
-        );
-        formData.append("video", videoFile);
-      }
-
-      // Log form data entries for debugging
-      for (let [key, value] of formData.entries()) {
-        if (key === "video") {
-          console.log("Form data - video:", value.name, value.type, value.size, "bytes");
-        } else {
-          console.log("Form data -", key, ":", value);
-        }
-      }
 
       // Submit the answer
       const response = await axios.post(
@@ -329,6 +160,29 @@ function AnswerQuestion() {
           </div>
         ) : (
           <div>
+            <div className="mb-8">
+              <button
+                onClick={() => navigate(`/responder-survey/${surveyId}`)}
+                className="inline-flex items-center text-mediumBlue hover:text-darkBlue transition-colors duration-200"
+              >
+                <svg
+                  className="w-5 h-5 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
+                Back to Survey
+              </button>
+            </div>
+            
             <h1 className="text-2xl font-bold text-darkBlue mb-6">
               Answer Question
             </h1>
@@ -339,112 +193,43 @@ function AnswerQuestion() {
               <p className="text-sm text-gray-600 mb-4">
                 Category: {questionData.category ? questionData.category.replace(/_/g, " ") : "Uncategorized"}
               </p>
-              {hasExistingVideo && (
-                <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
-                  <p>You have already uploaded a video for this survey. You can still submit a text answer.</p>
-                </div>
-              )}
             </div>
 
-            <textarea
-              value={answer}
-              onChange={e => setAnswer(e.target.value)}
-              placeholder="Type your answer here..."
-              className="w-full h-40 p-4 border border-lightBlue rounded-lg focus:outline-none focus:ring-2 focus:ring-mediumBlue mb-4"
-              disabled={submitting}
-            />
-
-            {!hasExistingVideo && (
-              <div className="mb-6 border border-lightBlue rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-darkBlue mb-2">
-                  Add Video Response (Optional)
-                </h3>
-                
-                {videoURL ? (
-                  <div className="mb-4">
-                    <video
-                      src={videoURL}
-                      controls
-                      className="w-full h-auto rounded"
-                    />
-                    <button
-                      onClick={clearVideo}
-                      className="bg-red-500 text-white py-1 px-3 rounded mt-2 hover:bg-red-600">
-                      Remove Video
-                    </button>
+            <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+              <label htmlFor="answer" className="block text-sm font-medium text-darkBlue mb-2">
+                Your Answer
+              </label>
+              <textarea
+                id="answer"
+                value={answer}
+                onChange={e => setAnswer(e.target.value)}
+                placeholder="Type your answer here..."
+                className="w-full h-40 p-4 border border-lightBlue rounded-lg focus:outline-none focus:ring-2 focus:ring-mediumBlue mb-4"
+                disabled={submitting}
+              />
+              
+              <p className="text-sm text-gray-500 mb-4">
+                Remember: You can also provide a video response for the entire survey from the survey page.
+              </p>
+              
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className={`${
+                  submitting
+                    ? "bg-gray-400"
+                    : "bg-mediumBlue hover:bg-hoverBlue"
+                } text-white font-medium py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 mt-6 flex items-center justify-center w-full`}>
+                {submitting ? (
+                  <div className="flex items-center">
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Submitting...
                   </div>
                 ) : (
-                  <div className="flex flex-col space-y-4">
-                    <div className="bg-gray-800 relative rounded overflow-hidden">
-                      {recording && (
-                        <div className="absolute top-2 right-2 z-10 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center">
-                          <span className="inline-block h-2 w-2 rounded-full bg-white mr-1 animate-pulse"></span>
-                          REC {formatTime(timer)}
-                        </div>
-                      )}
-                      <video 
-                        ref={webcamRef} 
-                        autoPlay 
-                        muted 
-                        className="w-full h-64 object-cover" 
-                      />
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {!recording && (
-                        <button
-                          onClick={startRecording}
-                          className="bg-mediumBlue hover:bg-hoverBlue text-white py-2 px-4 rounded-md">
-                          Start Recording
-                        </button>
-                      )}
-                      
-                      {recording && !paused && (
-                        <button
-                          onClick={pauseRecording}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md">
-                          Pause
-                        </button>
-                      )}
-                      
-                      {recording && paused && (
-                        <button
-                          onClick={resumeRecording}
-                          className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md">
-                          Resume
-                        </button>
-                      )}
-                      
-                      {recording && (
-                        <button
-                          onClick={stopRecording}
-                          className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md">
-                          Stop Recording
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                  "Submit Answer"
                 )}
-              </div>
-            )}
-
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className={`${
-                submitting
-                  ? "bg-gray-400"
-                  : "bg-mediumBlue hover:bg-hoverBlue"
-              } text-white font-medium py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 mt-6 flex items-center justify-center w-full`}>
-              {submitting ? (
-                <div className="flex items-center">
-                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Submitting...
-                </div>
-              ) : (
-                "Submit Answer"
-              )}
-            </button>
+              </button>
+            </div>
           </div>
         )}
       </main>

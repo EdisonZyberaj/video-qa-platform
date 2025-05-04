@@ -1,5 +1,4 @@
 import React from "react";
-import { useState } from "react";
 import "./App.css";
 import Home from "./Components/Home.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -17,9 +16,7 @@ import AnswerQuestion from "./Components/AnswerQuestion.jsx";
 import ResponderSurvey from "./Components/ResponderSurvey.jsx";
 import AddSurvey from "./Components/AddSurvey.jsx";
 import EditSurvey from "./Components/EditSurvey.jsx";
-import SurveyAnswerForm from "./Components/SurveyAnswerForm.jsx";
 
-// Admin Dashboard Components
 import AdminDashboard from "./Components/AdminDashboard.jsx";
 import AdminUsers from "./Components/AdminUsers.jsx";
 import AdminSurveys from "./Components/AdminSurveys.jsx";
@@ -49,10 +46,8 @@ function App() {
 					path="/survey/:id/question/:questionId/answer"
 					element={<AnswerQuestion />}
 				/>
-				<Route path="/survey/:id/answer-all" element={<SurveyAnswerForm />} />
 				<Route path="surveys/:id/update-survey" element={<EditSurvey />} />
 
-				{/* Admin Routes with Route Guard */}
 				<Route element={<AdminRouteGuard />}>
 					<Route path="/admin" element={<AdminDashboard />} />
 					<Route path="/admin/users" element={<AdminUsers />} />

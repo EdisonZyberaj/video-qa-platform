@@ -184,15 +184,6 @@ function AddSurvey() {
 			<Navbar />
 
 			<main className="container mx-auto flex-grow py-12 px-6">
-				<div className="mb-8">
-					<button
-						onClick={() => navigate("/surveys")}
-						className="flex items-center text-mediumBlue hover:text-darkBlue transition-colors">
-						<ArrowLeft className="w-4 h-4 mr-2" />
-						Back to Surveys
-					</button>
-				</div>
-
 				<div className="mb-10 text-center">
 					<h2 className="text-3xl font-bold text-darkBlue mb-3">
 						Create New Survey
