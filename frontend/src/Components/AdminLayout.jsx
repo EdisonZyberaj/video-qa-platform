@@ -47,12 +47,10 @@ function AdminLayout({ children, title }) {
 				{sidebarOpen ? <X size={24} /> : <Menu size={24} />}
 			</button>
 
-			{/* Sidebar */}
 			<div
 				className={`fixed inset-y-0 left-0 transform ${sidebarOpen
 					? "translate-x-0"
 					: "-translate-x-full"} lg:relative lg:translate-x-0 z-40 transition duration-200 ease-in-out lg:flex flex-col w-64 bg-darkBlue text-white`}>
-				{/* Sidebar header */}
 				<div className="p-4 border-b border-gray-700">
 					<div className="flex items-center">
 						<img src={logo} alt="Logo" className="h-10 w-10" />
@@ -60,7 +58,6 @@ function AdminLayout({ children, title }) {
 					</div>
 				</div>
 
-				{/* Sidebar navigation */}
 				<nav className="flex-1 overflow-y-auto py-4">
 					<ul className="space-y-2 px-2">
 						{navItems.map(item =>
@@ -83,7 +80,6 @@ function AdminLayout({ children, title }) {
 					</ul>
 				</nav>
 
-				{/* Sidebar footer */}
 				<div className="p-4 border-t border-gray-700">
 					<button
 						onClick={handleLogout}
@@ -94,9 +90,7 @@ function AdminLayout({ children, title }) {
 				</div>
 			</div>
 
-			{/* Main content */}
 			<div className="flex-1 flex flex-col overflow-hidden">
-				{/* Page header */}
 				<header className="bg-white shadow-sm z-10">
 					<div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
 						<h1 className="text-2xl font-bold text-darkBlue">
@@ -105,7 +99,6 @@ function AdminLayout({ children, title }) {
 					</div>
 				</header>
 
-				{/* Page content */}
 				<main className="flex-1 overflow-y-auto bg-gray-100 p-4">
 					<div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
 						{children}
@@ -113,7 +106,6 @@ function AdminLayout({ children, title }) {
 				</main>
 			</div>
 
-			{/* Mobile overlay */}
 			{sidebarOpen &&
 				<div
 					className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"

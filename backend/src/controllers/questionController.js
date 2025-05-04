@@ -1,12 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import {
 	createQuestion,
 	updateQuestion,
 	deleteQuestion,
 	getQuestionById
 } from "../services/questionService.js";
-
-const prisma = new PrismaClient();
 
 export const getQuestion = async (req, res) => {
 	const { id } = req.params;

@@ -12,19 +12,15 @@ import adminMiddleware from "../middlewares/adminMiddleware.js";
 
 const router = express.Router();
 
-// Apply auth and admin middleware to all routes
 router.use(authMiddleware);
 router.use(adminMiddleware);
 
-// Dashboard stats
 router.get("/stats", getDashboardStats);
 
-// User management
 router.get("/users", getAllUsers);
 router.patch("/users/:id/role", updateUserRole);
 router.delete("/users/:id", deleteUser);
 
-// Survey management
 router.get("/surveys", getAllSurveys);
 router.delete("/surveys/:id", deleteSurvey);
 

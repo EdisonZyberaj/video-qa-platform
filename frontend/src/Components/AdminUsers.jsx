@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Edit, Trash2, Search, X, AlertCircle } from "lucide-react";
+import { Trash2, Search, X, AlertCircle } from "lucide-react";
 import axios from "axios";
 import AdminLayout from "./AdminLayout";
 
@@ -8,7 +8,6 @@ function AdminUsers() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [searchTerm, setSearchTerm] = useState("");
-	const [editingUser, setEditingUser] = useState(null);
 	const [confirmDelete, setConfirmDelete] = useState(null);
 
 	useEffect(() => {
@@ -36,33 +35,6 @@ function AdminUsers() {
 			setError("Failed to load users. Please try again.");
 		} finally {
 			setLoading(false);
-		}
-	};
-
-	const handleUpdateRole = async (userId, newRole) => {
-		try {
-			const token = sessionStorage.getItem("token");
-
-			await axios.patch(
-				`http://localhost:5000/api/admin/users/${userId}/role`,
-				{ role: newRole },
-				{
-					headers: {
-						Authorization: `Bearer ${token}`
-					}
-				}
-			);
-
-			setUsers(
-				users.map(
-					user => (user.user_id === userId ? { ...user, role: newRole } : user)
-				)
-			);
-
-			setEditingUser(null);
-		} catch (error) {
-			console.error("Error updating user role:", error);
-			alert("Failed to update user role. Please try again.");
 		}
 	};
 
@@ -209,37 +181,15 @@ function AdminUsers() {
 															</div>
 														</td>
 														<td className="px-6 py-4 whitespace-nowrap">
-															{editingUser === user.user_id
-																? <div className="flex items-center space-x-2">
-																		<select
-																			defaultValue={user.role}
-																			onChange={e =>
-																				handleUpdateRole(
-																					user.user_id,
-																					e.target.value
-																				)}
-																			className="text-sm text-gray-900 border border-gray-300 rounded-md p-1">
-																			<option value="ASKER">ASKER</option>
-																			<option value="RESPONDER">
-																				RESPONDER
-																			</option>
-																			<option value="ADMIN">ADMIN</option>
-																		</select>
-																		<button
-																			onClick={() => setEditingUser(null)}
-																			className="text-gray-400 hover:text-gray-500">
-																			<X size={16} />
-																		</button>
-																	</div>
-																: <span
-																		className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role ===
-																		"ADMIN"
-																			? "bg-purple-100 text-purple-800"
-																			: user.role === "ASKER"
-																				? "bg-blue-100 text-blue-800"
-																				: "bg-green-100 text-green-800"}`}>
-																		{user.role}
-																	</span>}
+															<span
+																className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role ===
+																"ADMIN"
+																	? "bg-purple-100 text-purple-800"
+																	: user.role === "ASKER"
+																		? "bg-blue-100 text-blue-800"
+																		: "bg-green-100 text-green-800"}`}>
+																{user.role}
+															</span>
 														</td>
 														<td className="px-6 py-4 whitespace-nowrap">
 															<div className="text-sm text-gray-900">
@@ -277,13 +227,7 @@ function AdminUsers() {
 																			Cancel
 																		</button>
 																	</div>
-																: <div className="flex items-center justify-end space-x-2">
-																		<button
-																			onClick={() =>
-																				setEditingUser(user.user_id)}
-																			className="text-blue-600 hover:text-blue-900">
-																			<Edit size={18} />
-																		</button>
+																: <div className="flex items-center justify-end">
 																		<button
 																			onClick={() =>
 																				setConfirmDelete(user.user_id)}

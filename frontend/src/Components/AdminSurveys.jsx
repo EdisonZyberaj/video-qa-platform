@@ -45,7 +45,6 @@ function AdminSurveys() {
         }
       });
       
-      // Remove from local state
       setSurveys(surveys.filter(survey => survey.survey_id !== surveyId));
       setConfirmDelete(null);
     } catch (error) {
@@ -74,7 +73,6 @@ function AdminSurveys() {
 
   return (
     <AdminLayout title="Survey Management">
-      {/* Search and Filters */}
       <div className="bg-white p-4 rounded-lg shadow-md mb-6">
         <div className="flex items-center">
           <div className="relative flex-grow">
@@ -100,7 +98,6 @@ function AdminSurveys() {
         </div>
       </div>
       
-      {/* Surveys */}
       {loading ? (
         <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow-md">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mediumBlue"></div>
@@ -174,15 +171,6 @@ function AdminSurveys() {
                     </div>
                   ) : (
                     <div className="flex space-x-2">
-                      <a
-                        href={`/surveys/${survey.survey_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center px-3 py-1 bg-mediumBlue text-white text-sm rounded hover:bg-hoverBlue"
-                      >
-                        <Eye size={16} className="mr-1" />
-                        View
-                      </a>
                       <button
                         onClick={() => setConfirmDelete(survey.survey_id)}
                         className="flex items-center px-3 py-1 bg-red-100 text-red-600 text-sm rounded hover:bg-red-200"

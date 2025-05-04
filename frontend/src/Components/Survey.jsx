@@ -26,7 +26,6 @@ function Survey() {
 					return;
 				}
 
-				// First, fetch the survey details
 				console.log("Fetching survey details...");
 				const surveyResponse = await axios.get(`http://localhost:5000/api/surveys/${id}`, {
 					headers: {
@@ -43,8 +42,6 @@ function Survey() {
 					description: survey.description,
 				});
 
-				// Then, fetch questions separately
-				console.log("Fetching questions...");
 				const questionsResponse = await axios.get(`http://localhost:5000/api/surveys/${id}/questions`, {
 					headers: {
 						Authorization: `Bearer ${token}`,
@@ -53,7 +50,6 @@ function Survey() {
 
 				console.log("Questions data received:", questionsResponse.data);
 				
-				// Set the questions directly
 				if (Array.isArray(questionsResponse.data)) {
 					setQuestions(questionsResponse.data);
 				} else {
