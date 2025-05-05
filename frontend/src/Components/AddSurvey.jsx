@@ -160,7 +160,10 @@ function AddSurvey() {
 					},
 				}
 			);
-
+			
+			if(!response){
+					console.log("error");
+				}
 			toast.success("Survey created successfully!");
 
 			setTimeout(() => {
@@ -196,7 +199,6 @@ function AddSurvey() {
 				</div>
 
 				<form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-					{/* Survey Details */}
 					<div className="bg-white shadow-lg rounded-lg p-8 mb-8">
 						<h3 className="text-xl font-semibold text-darkBlue mb-6">
 							Survey Details
@@ -237,7 +239,6 @@ function AddSurvey() {
 						</div>
 					</div>
 
-					{/* Survey Questions */}
 					<div className="bg-white shadow-lg rounded-lg p-8 mb-8">
 						<div className="flex justify-between items-center mb-6">
 							<h3 className="text-xl font-semibold text-darkBlue">
@@ -309,7 +310,6 @@ function AddSurvey() {
 						)}
 					</div>
 
-					{/* Submit Button */}
 					<div className="flex justify-center mt-8 mb-12">
 						<button
 							type="submit"

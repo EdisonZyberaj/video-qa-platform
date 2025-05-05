@@ -18,7 +18,6 @@ function ResponderSurvey() {
   const [userAnswers, setUserAnswers] = useState([]);
   const [hasVideo, setHasVideo] = useState(false);
   
-  // Video upload state
   const [showVideoRecorder, setShowVideoRecorder] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -89,7 +88,6 @@ function ResponderSurvey() {
     fetchSurveyData();
   }, [id, navigate]);
 
-  // Handle video from VideoRecorder component
   const handleVideoRecorded = (blob) => {
     handleVideoUpload(blob);
   };
@@ -110,7 +108,6 @@ function ResponderSurvey() {
         return;
       }
       
-      // Create a dummy answer for metadata
       const dummyAnswer = {
         questionId: questions[0]?.question_id || 0,
         text: "Video response provided",
@@ -121,7 +118,6 @@ function ResponderSurvey() {
       const formData = new FormData();
       formData.append("answers", JSON.stringify([dummyAnswer]));
       
-      // Create a File object from the Blob with a unique name
       const videoFile = new File(
         [blob], 
         `survey_${id}_user_${userId}_${Date.now()}.webm`, 
@@ -279,7 +275,6 @@ function ResponderSurvey() {
               )}
             </div>
             
-            {/* Video Response Section */}
             {!hasVideo && !showVideoRecorder && (
               <div className="bg-white rounded-xl shadow-md overflow-hidden mb-10">
                 <div className="p-8">

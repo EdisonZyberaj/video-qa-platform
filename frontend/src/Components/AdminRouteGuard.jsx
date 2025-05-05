@@ -17,17 +17,15 @@ function AdminRouteGuard() {
 					return;
 				}
 
-				// Make a request to a protected admin endpoint
+				// shkojm tek endpointi i adminit , nqs kalon admin middleware ather po dmth jemi te loguar si admin
 				await axios.get("http://localhost:5000/api/admin/stats", {
 					headers: {
 						Authorization: `Bearer ${token}`
 					}
 				});
 
-				// If we get here, the user is authenticated as admin
 				setIsAdmin(true);
 			} catch (error) {
-				// If there's an error, the user is not an admin
 				console.error("Admin access check failed:", error);
 				setIsAdmin(false);
 			} finally {

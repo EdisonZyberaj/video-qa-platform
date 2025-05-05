@@ -75,7 +75,6 @@ function VideoRecorder({ onVideoRecorded, onCancel }) {
 			setRecording(true);
 			setPaused(false);
 
-			// Start timer
 			timerRef.current = setInterval(() => {
 				setTimer(prev => prev + 1);
 			}, 1000);

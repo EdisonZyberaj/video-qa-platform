@@ -1,7 +1,6 @@
 import {
 	getDashboardStats as fetchDashboardStats,
 	getAllUsers as fetchAllUsers,
-	updateUserRole as updateUserRoleService,
 	deleteUser as deleteUserService,
 	getAllSurveys as fetchAllSurveys,
 	deleteSurvey as deleteSurveyService
@@ -24,27 +23,6 @@ export const getAllUsers = async (req, res) => {
 	} catch (error) {
 		console.error("Error fetching all users:", error);
 		res.status(500).json({ error: "Failed to fetch users" });
-	}
-};
-
-export const updateUserRole = async (req, res) => {
-	const { id } = req.params;
-	const { role } = req.body;
-
-	if (!role || !["ASKER", "RESPONDER", "ADMIN"].includes(role)) {
-		return res.status(400).json({ error: "Invalid role provided" });
-	}
-
-	try {
-		const updatedUser = await updateUserRoleService(id, role);
-
-		res.status(200).json({
-			message: "User role updated successfully",
-			user: updatedUser
-		});
-	} catch (error) {
-		console.error("Error updating user role:", error);
-		res.status(500).json({ error: "Failed to update user role" });
 	}
 };
 

@@ -2,7 +2,6 @@ import express from "express";
 import {
 	getDashboardStats,
 	getAllUsers,
-	updateUserRole,
 	deleteUser,
 	getAllSurveys,
 	deleteSurvey
@@ -18,7 +17,6 @@ router.use(adminMiddleware);
 router.get("/stats", getDashboardStats);
 
 router.get("/users", getAllUsers);
-router.patch("/users/:id/role", updateUserRole);
 router.delete("/users/:id", deleteUser);
 
 router.get("/surveys", getAllSurveys);

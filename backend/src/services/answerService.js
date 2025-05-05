@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Readable } from "stream";
 import drive from "../config/googleDrive.js";
+import path from "path";
 
 const prisma = new PrismaClient();
 
@@ -153,13 +154,6 @@ export const getVideoAnswerBySurveyAndUploader = async (
 
 export const uploadVideoAnswer = async (videoFile, surveyId, userId) => {
 	try {
-		console.log(
-			`Attempting to upload video: ${videoFile.originalname} for survey ${surveyId} by user ${userId}`
-		);
-		console.log("File size:", videoFile.size, "bytes");
-		console.log("File type:", videoFile.mimetype);
-
-		// Validate inputs
 		if (!videoFile || !videoFile.buffer) {
 			throw new Error("Invalid video file");
 		}
@@ -167,28 +161,21 @@ export const uploadVideoAnswer = async (videoFile, surveyId, userId) => {
 		if (!surveyId || !userId) {
 			throw new Error("Missing surveyId or userId");
 		}
-
-		// Get folder ID from environment or use fallback
 		const folderId =
 			process.env.GOOGLE_DRIVE_FOLDER_ID || "1NZ9mYYUALmOsgvB6TFJrS6iiTR4FXuWM";
 
 		console.log("Using Google Drive folder ID:", folderId);
 
-		// Fix for stream handling - use a more reliable approach
 		const bufferStream = new Readable();
-		bufferStream._read = () => {}; // Required for Node.js streams
+		bufferStream._read = () => {};
 		bufferStream.push(videoFile.buffer);
-		bufferStream.push(null); // Signal end of the stream
+		bufferStream.push(null);
 
-		console.log("Uploading file to Google Drive...");
-
-		// Use a unique filename with timestamp to avoid conflicts
-		const filename = `survey_${surveyId}_user_${userId}_${Date.now()}.${videoFile.originalname
-			.split(".")
-			.pop() || "webm"}`;
+		const filename = `survey_${surveyId}_user_${userId}_${Date.now()}${path.extname(
+			videoFile.originalname
+		) || ".webm"}`;
 
 		try {
-			// Simplify upload parameters to debug
 			const response = await drive.files.create({
 				requestBody: {
 					name: filename,
@@ -203,7 +190,7 @@ export const uploadVideoAnswer = async (videoFile, surveyId, userId) => {
 
 			console.log("File uploaded successfully, ID:", response.data.id);
 
-			// Make the file publicly accessible
+			//e bejme videon te aksesueshme per kedo
 			await drive.permissions.create({
 				fileId: response.data.id,
 				requestBody: {
@@ -214,21 +201,17 @@ export const uploadVideoAnswer = async (videoFile, surveyId, userId) => {
 
 			console.log("Permissions set successfully");
 
-			// Get the public URL
 			const file = await drive.files.get({
 				fileId: response.data.id,
 				fields: "webViewLink,webContentLink"
 			});
-
+			//1 per ta par 2 per te ber download
 			const videoUrl = file.data.webViewLink || file.data.webContentLink;
 
 			if (!videoUrl) {
 				throw new Error("No video URL received from Google Drive");
 			}
 
-			console.log("Video URL obtained:", videoUrl);
-
-			// Save the video reference in the database
 			const videoAnswer = await prisma.survey_Video.create({
 				data: {
 					question_link: videoUrl,

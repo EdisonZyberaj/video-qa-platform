@@ -67,7 +67,6 @@ function ResponderSurveys() {
 		fetchSurveys();
 	}, []);
 
-	// Filter surveys based on search term
 	const filteredSurveys = surveys.filter(survey => {
 		const searchLower = searchTerm.toLowerCase();
 		return (

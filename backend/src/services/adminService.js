@@ -117,31 +117,6 @@ export const getAllUsers = async () => {
 	}
 };
 
-export const updateUserRole = async (userId, role) => {
-	if (!role || !["ASKER", "RESPONDER", "ADMIN"].includes(role)) {
-		throw new Error("Invalid role provided");
-	}
-
-	try {
-		const updatedUser = await prisma.user.update({
-			where: { user_id: parseInt(userId) },
-			data: { role },
-			select: {
-				user_id: true,
-				name: true,
-				last_name: true,
-				email: true,
-				role: true
-			}
-		});
-
-		return updatedUser;
-	} catch (error) {
-		console.error("Error updating user role:", error);
-		throw new Error("Failed to update user role");
-	}
-};
-
 export const deleteUser = async userId => {
 	try {
 		// First delete related records to avoid foreign key constraints
