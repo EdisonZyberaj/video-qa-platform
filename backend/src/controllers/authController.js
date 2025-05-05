@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import { registerUser, loginUser } from "../services/authService.js";
 
 dotenv.config();
-const prisma = new PrismaClient();
 
 export const register = async (req, res) => {
 	try {

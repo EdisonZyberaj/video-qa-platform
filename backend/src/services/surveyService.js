@@ -169,7 +169,6 @@ export const updateSurvey = async (surveyId, surveyData) => {
 };
 export const getSurveyResponders = async surveyId => {
 	try {
-		// First get all questions for this survey
 		const questions = await prisma.question.findMany({
 			where: {
 				surveyId: parseInt(surveyId)
@@ -179,10 +178,8 @@ export const getSurveyResponders = async surveyId => {
 			}
 		});
 
-		// Extract question IDs
 		const questionIds = questions.map(q => q.question_id);
 
-		// Find users who have answered these questions
 		const answers = await prisma.answer.findMany({
 			where: {
 				questionId: {

@@ -29,8 +29,7 @@ function AnswerQuestion() {
             Authorization: `Bearer ${token}`
           }
         };
-        
-        // Fetch question details
+
         const questionsResponse = await axios.get(
           `http://localhost:5000/api/surveys/${surveyId}/questions`,
           config
@@ -46,7 +45,6 @@ function AnswerQuestion() {
           setQuestionData(question);
         }
         
-        // Check if this question has already been answered
         try {
           const userAnswersResponse = await axios.get(
             `http://localhost:5000/api/answers/survey/${surveyId}/responder/${userId}`,
@@ -84,7 +82,6 @@ function AnswerQuestion() {
 
   const handleSubmit = async () => {
     try {
-      // Don't allow empty answers
       if (!answer.trim()) {
         setError("Please provide an answer before submitting");
         return;
@@ -111,20 +108,14 @@ function AnswerQuestion() {
           Authorization: `Bearer ${token}`
         }
       };
-
-      // Format answer in the expected format
       const formattedAnswers = [{
         questionId: parseInt(questionId),
         text: answer.trim(),
         surveyId: parseInt(surveyId),
         authorId: parseInt(userId)
       }];
-
-      // Create form data to handle the submission
       const formData = new FormData();
       formData.append("answers", JSON.stringify(formattedAnswers));
-
-      // Submit the answer
       const response = await axios.post(
         "http://localhost:5000/api/answers/submit",
         formData,

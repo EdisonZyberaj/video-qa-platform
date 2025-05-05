@@ -70,12 +70,8 @@ function EditSurvey() {
 
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
-  
-  // Track original and current state to detect changes
   const [originalSurveyData, setOriginalSurveyData] = useState(null);
   const [originalQuestions, setOriginalQuestions] = useState([]);
-  
-  // Current working state
   const [surveyData, setSurveyData] = useState({
     title: "",
     description: "",
@@ -85,7 +81,6 @@ function EditSurvey() {
   const [newQuestions, setNewQuestions] = useState([]);
   const [removedQuestionIds, setRemovedQuestionIds] = useState([]);
 
-  // Authentication check and data fetching
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     if (!token) {
@@ -95,22 +90,18 @@ function EditSurvey() {
     fetchSurvey();
   }, [id, navigate]);
 
-  // Fetch survey data
   const fetchSurvey = () => {
     const token = sessionStorage.getItem("token");
     
-    axios.get(   //  perdor async await
+    axios.get(  
       `http://localhost:5000/api/surveys/${id}`,
       { headers: { Authorization: `Bearer ${token}` } }
     )
     .then(response => {
       const { questions, ...surveyBasicData } = response.data;
-      
-      // Store original data (for comparison later)
       setOriginalSurveyData(surveyBasicData);
       setOriginalQuestions(questions || []);
       
-      // Set working copies
       setSurveyData(surveyBasicData);
       setCurrentQuestions(questions ? [...questions] : []);
       
@@ -123,7 +114,6 @@ function EditSurvey() {
     });
   };
 
-  // Form change handlers
   const handleSurveyChange = e => {
     const { name, value } = e.target;
     setSurveyData(prev => ({ ...prev, [name]: value }));
@@ -171,7 +161,6 @@ function EditSurvey() {
       return updated;
     });
     
-    // Show a temporary warning message
     toast.warning("Question removed. Remember to save your changes.");
   };
 
@@ -182,11 +171,9 @@ function EditSurvey() {
       return updated;
     });
     
-    // Show a temporary warning message
     toast.warning("Question removed. Remember to save your changes.");
   };
 
-  // Check if survey data has changed
   const hasSurveyDataChanged = () => {
     return (
       surveyData.title !== originalSurveyData.title ||
@@ -194,19 +181,15 @@ function EditSurvey() {
     );
   };
 
-  // Check if questions have been modified
   const hasQuestionsChanged = () => {
-    // If questions have been added or removed
     if (newQuestions.length > 0 || removedQuestionIds.length > 0) {
       return true;
     }
     
-    // If any existing question content has changed
     if (currentQuestions.length !== originalQuestions.length) {
       return true;
     }
     
-    // Check if any question fields have changed
     for (let i = 0; i < currentQuestions.length; i++) {
       const current = currentQuestions[i];
       const original = originalQuestions.find(
@@ -221,7 +204,6 @@ function EditSurvey() {
     return false;
   };
 
-  // Process all API calls sequentially without promises
   const processApiCalls = (calls, index, onComplete) => {
     if (index >= calls.length) {
       onComplete();
@@ -234,13 +216,10 @@ function EditSurvey() {
     });
   };
 
-  // Form submission
   const handleSubmit = e => {
     e.preventDefault();
     
-    // Check if anything has changed
     if (!hasSurveyDataChanged() && !hasQuestionsChanged()) {
-      // Show toast notification instead of dialog
       toast.error("YOU DIDN'T CHANGE ANYTHING");
       return;
     }
@@ -254,10 +233,8 @@ function EditSurvey() {
       return;
     }
 
-    // Create array of API call functions
     const apiCalls = [];
 
-    // Only update survey data if it changed
     if (hasSurveyDataChanged()) {
       apiCalls.push((next) => {
         axios.patch(
@@ -280,7 +257,6 @@ function EditSurvey() {
       });
     }
 
-    // Update existing questions that have changed
     currentQuestions.forEach(question => {
       const original = originalQuestions.find(
         q => q.question_id === question.question_id
@@ -308,9 +284,8 @@ function EditSurvey() {
       }
     });
 
-    // Add new questions
     newQuestions.forEach(question => {
-      if (question.title.trim()) { // Only add if title is not empty
+      if (question.title.trim()) { 
         apiCalls.push((next) => {
           axios.post(
             `http://localhost:5000/api/questions`,
@@ -334,7 +309,6 @@ function EditSurvey() {
       }
     });
 
-    // Delete removed questions
     removedQuestionIds.forEach(questionId => {
       apiCalls.push((next) => {
         axios.delete(
@@ -352,19 +326,15 @@ function EditSurvey() {
       });
     });
 
-    // Process all API calls sequentially
     processApiCalls(apiCalls, 0, () => {
-      // All API calls completed successfully
       setLoading(false);
       toast.success("Survey updated successfully!");
-      // Navigate after a short delay to allow the toast to be seen
       setTimeout(() => {
         navigate("/surveys");
       }, 2000);
     });
   };
 
-  // Render loading state
   if (fetchingData) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -384,7 +354,6 @@ function EditSurvey() {
       <Navbar />
 
       <main className="container mx-auto flex-grow py-12 px-6">
-        {/* Toast Container for notifications */}
         <ToastContainer 
           position="top-center"
           autoClose={5000}
@@ -396,8 +365,6 @@ function EditSurvey() {
           draggable
           pauseOnHover
         />
-
-        {/* Back button */}
         <div className="mb-8">
           <button
             onClick={() => navigate("/surveys")}
@@ -406,8 +373,6 @@ function EditSurvey() {
             Back to Surveys
           </button>
         </div>
-
-        {/* Page title */}
         <div className="mb-10 text-center">
           <h2 className="text-3xl font-bold text-darkBlue mb-3">
             Edit Survey
@@ -419,7 +384,6 @@ function EditSurvey() {
         </div>
 
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-          {/* Survey details section */}
           <div className="bg-white shadow-lg rounded-lg p-8 mb-8">
             <h3 className="text-xl font-semibold text-darkBlue mb-6">
               Survey Details
@@ -460,7 +424,6 @@ function EditSurvey() {
             </div>
           </div>
           
-          {/* Questions section */}
           <div className="bg-white shadow-lg rounded-lg p-8 mb-8">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-semibold text-darkBlue">
@@ -475,7 +438,6 @@ function EditSurvey() {
               </button>
             </div>
             
-            {/* Existing questions */}
             {currentQuestions.length > 0 && (
               <>
                 <h4 className="text-lg font-medium text-darkBlue mb-4">Existing Questions</h4>
@@ -537,7 +499,6 @@ function EditSurvey() {
               </>
             )}
             
-            {/* New questions */}
             {newQuestions.length > 0 && (
               <>
                 <h4 className="text-lg font-medium text-darkBlue mb-4">New Questions</h4>
@@ -599,7 +560,6 @@ function EditSurvey() {
               </>
             )}
             
-            {/* No questions message */}
             {currentQuestions.length === 0 && newQuestions.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <p className="bg-blue-50 text-blue-800 p-4 rounded-lg">
@@ -609,7 +569,6 @@ function EditSurvey() {
             )}
           </div>
           
-          {/* Submit button */}
           <div className="flex justify-center mt-8 mb-12">
             <button
               type="submit"

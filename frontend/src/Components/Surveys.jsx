@@ -44,8 +44,6 @@ function Surveys() {
 
 		fetchSurveys();
 	}, []);
-
-	// Filter surveys based on search term
 	const filteredSurveys = surveys.filter(survey => {
 		const searchLower = searchTerm.toLowerCase();
 		return (
@@ -67,8 +65,6 @@ function Surveys() {
 						participation helps us improve our services.
 					</p>
 				</div>
-
-				{/* Search Box */}
 				<div className="mb-8 max-w-md mx-auto">
 					<div className="relative">
 						<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

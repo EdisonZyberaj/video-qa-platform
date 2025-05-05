@@ -17,12 +17,11 @@ export const submitAnswer = async (req, res) => {
       file: req.file ? `File received: ${req.file.originalname}` : "No file received" 
     });
     
-    // Parse the answers array from JSON
     let answers = [];
     try {
       answers = JSON.parse(req.body.answers || "[]");
       if (!Array.isArray(answers)) {
-        answers = [answers]; // Convert to array if single object
+        answers = [answers]; 
       }
       console.log("Parsed answers:", answers);
     } catch (e) {
@@ -34,29 +33,24 @@ export const submitAnswer = async (req, res) => {
       return res.status(400).json({ error: "No answers provided" });
     }
 
-    // Make sure user_id is accessed properly from req.user
     const userId = req.user?.user_id;
     
     if (!userId) {
       return res.status(401).json({ error: "User ID is missing. Please log in again." });
     }
 
-    // Verify user exists
     const user = await verifyUserExists(userId);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Use the surveyId from the first answer
     const surveyId = answers[0].surveyId;
 
-    // Handle video upload if present
     let videoUploadResult = null;
     
     if (req.file) {
       try {
-        // Check if user already has a video for this survey
         const existingVideo = await getVideoAnswerBySurveyAndUploader(surveyId, userId);
 
         if (!existingVideo) {
@@ -68,16 +62,13 @@ export const submitAnswer = async (req, res) => {
         }
       } catch (videoError) {
         console.error("Error handling video:", videoError);
-        // Continue with text answers even if video upload fails
       }
     }
 
-    // Process each answer
     const processedAnswers = [];
     for (const answer of answers) {
       const { text, questionId } = answer;
       
-      // Allow empty text if there's a video
       const hasVideo = req.file != null;
       if (!text && !text.trim() && !hasVideo) {
         return res.status(400).json({ 
@@ -93,7 +84,6 @@ export const submitAnswer = async (req, res) => {
         });
       }
 
-      // Verify question exists
       const question = await verifyQuestionInSurvey(questionId, surveyId);
 
       if (!question) {
@@ -102,7 +92,6 @@ export const submitAnswer = async (req, res) => {
         });
       }
 
-      // Check for existing answer and update or create
       const existingAnswer = await findExistingAnswer(questionId, userId, surveyId);
 
       let processedAnswer;
